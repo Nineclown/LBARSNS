@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1016332249591",
+    "firebase_url": "https://lbarsns.firebaseio.com",
+    "project_id": "lbarsns",
+    "storage_bucket": "lbarsns.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016332249591:android:a41c0d37d5821ebb",
+        "android_client_info": {
+          "package_name": "com.nineclown.lbarsns"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1016332249591-d0i1nj2e8hql97ru49kaegmmj5epm5ut.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nineclown.lbarsns",
+            "certificate_hash": "e31aa6c95541c8dc402b26c54a77c59f2805ebc2"
+          }
+        },
+        {
+          "client_id": "1016332249591-n0p7qf1rrd75i9fnlvgd26af625j7eq9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqCs4V4CnKmCM4JbU8KugCrf7PNzBQWuQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1016332249591-n0p7qf1rrd75i9fnlvgd26af625j7eq9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
