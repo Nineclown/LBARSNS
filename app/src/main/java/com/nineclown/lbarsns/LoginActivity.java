@@ -31,7 +31,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mPasswordField = (EditText) findViewById(R.id.field_password);
 
         //Buttons
-        findViewById(R.id.email_create_account_button).setOnClickListener(this);
+        findViewById(R.id.signin_button).setOnClickListener(this);
+        findViewById(R.id.signup_button).setOnClickListener(this);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -44,12 +45,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
                             moveMainPage(mAuth.getCurrentUser());
                             Toast.makeText(LoginActivity.this, "회원 가입이 완료되었습니다.", Toast.LENGTH_SHORT).show();
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "createUserWithEmail:success");
-                            // FirebaseUser user = mAuth.getCurrentUser();
-                            // updateUI(user);
+
 
                         } else {
                             // If sign in fails, display a message to the user.
@@ -73,7 +72,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             moveMainPage(mAuth.getCurrentUser());
-                            Toast.makeText(LoginActivity.this, "회원 가입이 완료되었습니다.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "로그인 되었습니다.", Toast.LENGTH_SHORT).show();
 
                             //
                             //  Log.d(TAG, "signInWithEmail:success");
@@ -109,11 +108,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
         int i = v.getId();
-        if (i == R.id.email_create_account_button) {
-            createUserWithEmail(mEmailField.getText().toString(), mPasswordField.getText().toString());
-        }/* else if (i == R.id.email_sign_in_button) {
+        if (i == R.id.signin_button) {
             signIn(mEmailField.getText().toString(), mPasswordField.getText().toString());
-        } else if (i == R.id.sign_out_button) {
+        } else if (i == R.id.signup_button) {
+            createUserWithEmail(mEmailField.getText().toString(), mPasswordField.getText().toString());
+        }/* else if (i == R.id.sign_out_button) {
             signOut();
         } else if (i == R.id.verify_email_button) {
             sendEmailVerification();

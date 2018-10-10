@@ -4,6 +4,10 @@
     <color name="colorPrimaryDark">#e1e1e1</color>
     <color name="colorLightGray">#f1f1f1</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorGray">#fafafa</color>
+    <color name="colorSkyBlue">#c3e0fa</color>
+    <color name="colorDeepGray">#dbdbdb</color>
+    <color name="colorDarkGray">#999999</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorDivision">#e0e0e0</color>
     <color name="colorNavIcon">#1d1d1d</color>
@@ -12,4 +16,8 @@
     <color name="colorGoogleSignInPressed">#b02513</color>
     <color name="colorEmailSignIn">#009688</color>
     <color name="colorEmailSignInPressed">#004D40</color>
+
+    <color name="colorFacebook">#469af7</color>
+    <color name="colorGoogle">#ff5353</color>
+
 </resources>
