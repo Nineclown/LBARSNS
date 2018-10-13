@@ -37,7 +37,7 @@
             android:visibility="gone" />
 
         <LinearLayout
-            android:id="@+id/signin_layout"
+            android:id="@+id/sign_in_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/image_layout"
@@ -208,8 +208,6 @@
                     android:textColor="@color/colorDarkGray"
                     android:textSize="13sp"
                     android:textStyle="bold" />
-
-
             </LinearLayout>
 
 

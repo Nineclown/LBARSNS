@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
-
+        binding.bottomNavigation.setSelectedItemId(R.id.action_home);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
 
     }
