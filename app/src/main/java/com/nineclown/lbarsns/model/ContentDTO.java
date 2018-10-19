@@ -11,17 +11,17 @@ public class ContentDTO {
     private Long timestamp;
     private int favoriteCount;
     private HashMap<String, Boolean> favorites;
-   // private Comment comment;
+    // private Comment comment;
 
 
     public ContentDTO() {
-        explain = null;
-        imageUrl = null;
-        uid = null;
-        userId = null;
-        timestamp = null;
-        favoriteCount = 0;
-        favorites = new HashMap<>();
+        this.explain = null;
+        this.imageUrl = null;
+        this.uid = null;
+        this.userId = null;
+        this.timestamp = null;
+        this.favoriteCount = 0;
+        this.favorites = new HashMap<>();
         //comment = new Comment();
     }
 
@@ -77,8 +77,8 @@ public class ContentDTO {
         return favorites;
     }
 
-    public void setFavorites(HashMap<String, Boolean> favorites) {
-        this.favorites = favorites;
+    public void setFavorites(String uid, boolean bool) {
+        this.favorites.put(uid, bool);
     }
 
    /* public Comment getComment() {

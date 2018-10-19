@@ -74,7 +74,7 @@ public class AddPhotoActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 //사진 선택 할때
                 photoUri = data.getData();
-                binding.addPhotoImage.setImageURI(data.getData());
+                binding.addPhotoImage.setImageURI(photoUri);
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 //뒤로가기 누를때
                 finish();
@@ -94,6 +94,7 @@ public class AddPhotoActivity extends AppCompatActivity {
             @Override
             public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
                 if (!task.isSuccessful()) {
+                    // 실패하면 예외처리.
                     throw Objects.requireNonNull(task.getException());
                 }
 

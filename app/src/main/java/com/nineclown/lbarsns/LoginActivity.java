@@ -292,10 +292,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
         int i = v.getId();
+
+        String id = binding.fieldEmail.getText().toString();
+        String pw = binding.fieldPassword.getText().toString();
+
         if (i == R.id.sign_up_button) {
-            signUp(binding.fieldEmail.getText().toString(), binding.fieldPassword.getText().toString());
+            signUp(id, pw);
         } else if (i == R.id.sign_in_button) {
-            signIn(binding.fieldEmail.getText().toString(), binding.fieldEmail.getText().toString());
+            signIn(id, pw);
         } else if (i == R.id.google_sign_in_button) {
             signInWithGoogle();
         } else if (i == R.id.facebook_sign_in_button) {
