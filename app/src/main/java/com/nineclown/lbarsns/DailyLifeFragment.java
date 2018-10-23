@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -27,8 +29,10 @@ import com.nineclown.lbarsns.databinding.FragmentDailyLifeBinding;
 import com.nineclown.lbarsns.databinding.ItemDailyBinding;
 import com.nineclown.lbarsns.model.AlarmDTO;
 import com.nineclown.lbarsns.model.ContentDTO;
+import com.nineclown.lbarsns.model.FollowDTO;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DailyLifeFragment extends Fragment {
 
@@ -51,26 +55,40 @@ public class DailyLifeFragment extends Fragment {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_daily_life, container, false);
 
-        binding.dailylifefragmentRecyclerview.setAdapter(new DetailviewFragmentRecyclerViewAdapter());
+        binding.dailylifefragmentRecyclerview.setAdapter(new DailyLifeRecyclerViewAdapter());
         binding.dailylifefragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         return binding.getRoot();
     }
 
-    private class DetailviewFragmentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private class DailyLifeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         private ArrayList<ContentDTO> contentDTOs;
         private ArrayList<String> contentUidList;
         private ItemDailyBinding aBinding;
 
-        public DetailviewFragmentRecyclerViewAdapter() {
+        public DailyLifeRecyclerViewAdapter() {
 
             contentDTOs = new ArrayList<>();
             contentUidList = new ArrayList<>();
 
-            // 현재 로그인된 유저의 UID(해쉬 키)
-            String uid = mAuth.getCurrentUser().getUid();
+            mFirestore.collection("users").document(mUid).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        FollowDTO userDTO = task.getResult().toObject(FollowDTO.class);
+                        if (userDTO != null) {
+                            getContents(userDTO.getFollowings());
+                        }
+                    }
+                }
+            });
 
+
+        }
+
+        private void getContents(final HashMap<String, Boolean> following) {
+            // 이미지를 가져오는 코드
             mFirestore.collection("images").orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
@@ -79,7 +97,10 @@ public class DailyLifeFragment extends Fragment {
                     for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
                         //DB에 있는 데이터를 snapshot이라는 변수에 담은 후에, ContentDTO 데이터 형식으로 변환.
                         ContentDTO item = snapshot.toObject(ContentDTO.class);
-                        contentDTOs.add(item);
+
+                        // 모든 이미지를 다돌아다니면서 현재 로그인한 사용자가 팔로잉하고 있는 사람의 글을 가져온다.
+                        if (following.keySet().contains(item.getUid()))
+                            contentDTOs.add(item);
                         contentUidList.add(snapshot.getId());
                     }
 
@@ -143,6 +164,7 @@ public class DailyLifeFragment extends Fragment {
                     bundle.putString("destinationUid", contentDTOs.get(position).getUid());
                     bundle.putString("userId", contentDTOs.get(position).getUserId());
                     // 액티비티의 PutExtra와 같은 개념이 프래그먼트에서 Argument라고 생각하면 된다.
+                    // 시작할 때만 사용할 수 있다,
                     fragment.setArguments(bundle);
                     getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, fragment).commit();
                 }
@@ -155,6 +177,7 @@ public class DailyLifeFragment extends Fragment {
                     Intent intent = new Intent(v.getContext(), CommentActivity.class);
 
                     intent.putExtra("contentUid", contentUidList.get(position));
+                    intent.putExtra("destinationUid", contentDTOs.get(position).getUid());
                     // 컨텍스트를 받아 오는 방법은 다양하다고 한다. View를 통해서 가져올 수도 있고, 근데 난 잘 몰라. 컨텍스트가 머하는 놈인지도 잘 몰라.
                     startActivity(intent);
                 }

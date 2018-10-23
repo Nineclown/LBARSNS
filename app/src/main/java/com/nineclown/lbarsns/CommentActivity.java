@@ -18,6 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.nineclown.lbarsns.databinding.ActivityCommentBinding;
 import com.nineclown.lbarsns.databinding.ItemCommentBinding;
+import com.nineclown.lbarsns.model.AlarmDTO;
 import com.nineclown.lbarsns.model.ContentDTO;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class CommentActivity extends AppCompatActivity {
     private FirebaseFirestore mFirestore;
     private String mUid;
     private String contentUid;
+    private String destinationUid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,7 @@ public class CommentActivity extends AppCompatActivity {
         // fragment는 argument, activity는 intent를 통해 데이터를 받아온다.
         // 그리고 content의 id를 받아오는 부분이 recyclerview를 붙이는 부분 보다 위에 위치해야 한다. 아래에 위치하면 null 이 들어감.
         contentUid = getIntent().getStringExtra("contentUid");
+        destinationUid = getIntent().getStringExtra("destinationUid");
 
         // 리사이클러 뷰를 액티비티에 붙이는 부분?
         binding.commentRecyclerview.setAdapter(new CommentRecyclerViewAdapter());
@@ -59,10 +62,23 @@ public class CommentActivity extends AppCompatActivity {
                     return;
                 }
                 mFirestore.collection("images").document(contentUid).collection("comments").document().set(comment);
-                // 입력 후, 초기화.
+                commentAlarm(destinationUid, binding.commentEditMessage.getText().toString());
+                // 입력 후, edittext 초기화.
                 binding.commentEditMessage.setText("");
             }
         });
+    }
+
+    private void commentAlarm(String destinationUid, String message) {
+        AlarmDTO alarmDTO = new AlarmDTO();
+        alarmDTO.setDestinationUid(destinationUid);
+        alarmDTO.setMessage(message);
+        alarmDTO.setUserId(mAuth.getCurrentUser().getEmail());
+        alarmDTO.setUid(mUid);
+        alarmDTO.setKind(1);
+        alarmDTO.setTimestamp(System.currentTimeMillis());
+
+        mFirestore.collection("alarms").document().set(alarmDTO);
     }
 
     private class CommentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

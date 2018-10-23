@@ -59,6 +59,7 @@ public class InfoFragment extends Fragment {
             mFirestore.collection("images").orderBy("timestamp").addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    if (queryDocumentSnapshots == null) return;
                     for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
                         contentDTOs.add(snapshot.toObject(ContentDTO.class));
                     }
@@ -79,11 +80,25 @@ public class InfoFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             CustomViewHolder viewHolder = (CustomViewHolder) holder;
 
             // viewHolder.imageView.setImageResource(R.drawable.btn_signin_facebook);
             Glide.with(holder.itemView.getContext()).load(contentDTOs.get(position).getImageUrl()).apply(new RequestOptions().centerCrop()).into(viewHolder.imageView);
+            viewHolder.imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    UserFragment userFragment = new UserFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("destinationUid", contentDTOs.get(position).getUid());
+                    bundle.putString("userId", contentDTOs.get(position).getUserId());
+
+                    userFragment.setArguments(bundle);
+
+                    getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, userFragment).commit();
+
+                }
+            });
         }
 
         @Override

@@ -26,6 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
 import com.nineclown.lbarsns.databinding.FragmentUserBinding;
+import com.nineclown.lbarsns.model.AlarmDTO;
 import com.nineclown.lbarsns.model.ContentDTO;
 import com.nineclown.lbarsns.model.FollowDTO;
 
@@ -195,10 +196,11 @@ public class UserFragment extends Fragment {
                     //내가 팔로잉 하려는 상대의 입장에서 내가 아직 그를 팔로우 안한 경우,
                     followDTO.setFollowerCount(followDTO.getFollowerCount() + 1);
                     followDTO.setFollowers(mCurrentUid, true);
+                    // 알람이 나한테 오는게 아니라 쟤한테 가야지.
+                    followerAlarm(mUid);
 
                 }
                 transaction.set(tsDocFollower, followDTO);
-                System.out.println("CurruntUid: " + mCurrentUid + " @@@@@@@@@@여기는 남이 나를 팔로우 해줄때.");
                 return null;
             }
         });
@@ -226,6 +228,17 @@ public class UserFragment extends Fragment {
 
     }
 
+    private void followerAlarm(String destinationUid) {
+        AlarmDTO alarmDTO = new AlarmDTO();
+        alarmDTO.setDestinationUid(destinationUid);
+        alarmDTO.setUserId(mAuth.getCurrentUser().getEmail());
+        alarmDTO.setUid(mUid);
+        alarmDTO.setKind(2);
+        alarmDTO.setTimestamp(System.currentTimeMillis());
+
+        mFirestore.collection("alarms").document().set(alarmDTO);
+    }
+
     private void getFollower() {
         mFirestore.collection("users").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -235,8 +248,18 @@ public class UserFragment extends Fragment {
                 if (followDTO == null) return;
                 String count = Integer.toString(followDTO.getFollowerCount());
                 binding.accountTvFollowerCount.setText(count);
+
+                if (followDTO.getFollowers().containsKey(mCurrentUid)) {
+                    binding.accountBtnFollowSignout.setText(getString(R.string.follow_cancel));
+                    //binding.accountBtnFollowSignout;
+                } else {
+                    if (mUid != mCurrentUid) {
+                        binding.accountBtnFollowSignout.setText(getString(R.string.follow));
+                    }
+                }
             }
         });
+
     }
 
     private void getFollowing() {
