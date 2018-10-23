@@ -124,6 +124,8 @@ public class AddPhotoActivity extends AppCompatActivity {
                     // 게시물 업로드 시간
                     contentDTO.setTimestamp(System.currentTimeMillis());
 
+                    // 게시물 댓글.
+
                     mFirestore.collection("images").document().set(contentDTO);
                     setResult(Activity.RESULT_OK);
 

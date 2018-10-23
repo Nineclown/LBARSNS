@@ -11,8 +11,45 @@ public class ContentDTO {
     private Long timestamp;
     private int favoriteCount;
     private HashMap<String, Boolean> favorites;
-    // private Comment comment;
 
+    public static class Comment {
+        private String uid;
+        private String userId;
+        private String comment;
+        private Long timestamp;
+
+        public String getUid() {
+            return uid;
+        }
+
+        public void setUid(String uid) {
+            this.uid = uid;
+        }
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public void setUserId(String userId) {
+            this.userId = userId;
+        }
+
+        public String getComment() {
+            return comment;
+        }
+
+        public void setComment(String comment) {
+            this.comment = comment;
+        }
+
+        public Long getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(Long timestamp) {
+            this.timestamp = timestamp;
+        }
+    }
 
     public ContentDTO() {
         this.explain = null;
@@ -22,7 +59,6 @@ public class ContentDTO {
         this.timestamp = null;
         this.favoriteCount = 0;
         this.favorites = new HashMap<>();
-        //comment = new Comment();
     }
 
     public String getExplain() {
@@ -81,55 +117,5 @@ public class ContentDTO {
         this.favorites.put(uid, bool);
     }
 
-   /* public Comment getComment() {
-        return comment;
-    }
 
-    public void setComment(Comment comment) {
-        this.comment = comment;
-    }
-*/
-
-    /*private class Comment {
-        private String uid;
-        private String userId;
-        private String comment;
-        private Long timestamp;
-
-        public Comment() {
-
-        }
-
-        public String getUid() {
-            return uid;
-        }
-
-        public void setUid(String uid) {
-            this.uid = uid;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public String getComment() {
-            return comment;
-        }
-
-        public void setComment(String comment) {
-            this.comment = comment;
-        }
-
-        public Long getTimestamp() {
-            return timestamp;
-        }
-
-        public void setTimestamp(Long timestamp) {
-            this.timestamp = timestamp;
-        }
-    }*/
 }

@@ -1,6 +1,7 @@
 package com.nineclown.lbarsns;
 
 
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -22,16 +23,17 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
 import com.nineclown.lbarsns.databinding.FragmentDailyLifeBinding;
-import com.nineclown.lbarsns.databinding.ItemDetailBinding;
+import com.nineclown.lbarsns.databinding.ItemDailyBinding;
 import com.nineclown.lbarsns.model.ContentDTO;
 
 import java.util.ArrayList;
 
 public class DailyLifeFragment extends Fragment {
 
-    private FragmentDailyLifeBinding fBinding;
+    private FragmentDailyLifeBinding binding;
     private FirebaseFirestore mFirestore;
     private FirebaseAuth mAuth;
+    private String mUid;
 
     public DailyLifeFragment() {
         // Required empty public constructor
@@ -43,20 +45,21 @@ public class DailyLifeFragment extends Fragment {
 
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+        mUid = mAuth.getCurrentUser().getUid();
         // Inflate the layout for this fragment
-        fBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_daily_life, container, false);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_daily_life, container, false);
 
-        fBinding.dailylifeFragmentRecyclerview.setAdapter(new DetailviewFragmentRecyclerViewAdapter());
-        fBinding.dailylifeFragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
+        binding.dailylifeFragmentRecyclerview.setAdapter(new DetailviewFragmentRecyclerViewAdapter());
+        binding.dailylifeFragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        return fBinding.getRoot();
+        return binding.getRoot();
     }
 
     private class DetailviewFragmentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         private ArrayList<ContentDTO> contentDTOs;
         private ArrayList<String> contentUidList;
-        private ItemDetailBinding iBinding;
+        private ItemDailyBinding iBinding;
 
         public DetailviewFragmentRecyclerViewAdapter() {
 
@@ -88,7 +91,7 @@ public class DailyLifeFragment extends Fragment {
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             // 뷰를 설정하는 곳. 가져오는 곳.
-            iBinding = ItemDetailBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+            iBinding = ItemDailyBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
             return new CustomViewHolder(iBinding);
 
         }
@@ -99,19 +102,21 @@ public class DailyLifeFragment extends Fragment {
             CustomViewHolder viewHolder = (CustomViewHolder) holder;
 
             // 유저 아이디
-            viewHolder.iBinding.detailviewitemTextviewProfile.setText(contentDTOs.get(position).getUserId());
+            viewHolder.iBinding.dailyviewitemTextviewProfile.setText(contentDTOs.get(position).getUserId());
             //iBinding.detailviewitemProfileTextview.setText(contentDTOs.get(position).getUserId()); 이렇게 하면 뷰홀더를 안거쳐서 안되는 건가??
 
             // 이미지.  콜백 방식. 이미지를 ~~한 다음에 마지막에 into()로 결과 값을 받아서 뷰에 집어넣는대. 스레드?
-            Glide.with(holder.itemView.getContext()).load(contentDTOs.get(position).getImageUrl()).into(viewHolder.iBinding.detailviewitemImageviewContent);
+            Glide.with(holder.itemView.getContext())
+                    .load(contentDTOs.get(position).getImageUrl())
+                    .into(viewHolder.iBinding.dailyviewitemImageviewContent);
 
             // 설명 텍스트
-            viewHolder.iBinding.detailviewitemTextviewExplain.setText(contentDTOs.get(position).getExplain());
+            viewHolder.iBinding.dailyviewitemTextviewExplain.setText(contentDTOs.get(position).getExplain());
 
             // 좋아요 카운터 설정
             String memo = "좋아요 " + contentDTOs.get(position).getFavoriteCount() + "개";
-            viewHolder.iBinding.detailviewitemTextviewFavoritecounter.setText(memo);
-            viewHolder.iBinding.detailviewitemImageviewFavorite.setOnClickListener(new View.OnClickListener() {
+            viewHolder.iBinding.dailyviewitemTextviewFavoritecounter.setText(memo);
+            viewHolder.iBinding.dailyviewitemImageviewFavorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     favoriteEvent(position);
@@ -119,16 +124,16 @@ public class DailyLifeFragment extends Fragment {
             });
 
             // 좋아요 클릭
-            String uid = mAuth.getCurrentUser().getUid();
-            if (contentDTOs.get(position).getFavorites().containsKey(uid)) {
-                viewHolder.iBinding.detailviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite);
+            if (contentDTOs.get(position).getFavorites().containsKey(mUid)) {
+                viewHolder.iBinding.dailyviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite);
 
                 // 좋아요 다시 클릭.
             } else {
-                viewHolder.iBinding.detailviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite_border);
+                viewHolder.iBinding.dailyviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite_border);
             }
 
-            viewHolder.iBinding.detailviewitemImageviewProfile.setOnClickListener(new View.OnClickListener() {
+            // 게시 글의 프로필 클릭. (프래그먼트 이동)
+            viewHolder.iBinding.dailyviewitemImageviewProfile.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Fragment fragment = new UserFragment();
@@ -140,6 +145,19 @@ public class DailyLifeFragment extends Fragment {
                     getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, fragment).commit();
                 }
             });
+
+            // 코멘트 클릭 할 때.
+            viewHolder.iBinding.dailyviewitemImageviewComment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(v.getContext(), CommentActivity.class);
+
+                    intent.putExtra("contentUid", contentUidList.get(position));
+                    // 컨텍스트를 받아 오는 방법은 다양하다고 한다. View를 통해서 가져올 수도 있고, 근데 난 잘 몰라. 컨텍스트가 머하는 놈인지도 잘 몰라.
+                    startActivity(intent);
+                }
+            });
+
         }
 
         @Override
@@ -154,18 +172,18 @@ public class DailyLifeFragment extends Fragment {
                 @Nullable
                 @Override
                 public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                    String uid = mAuth.getCurrentUser().getUid();
                     DocumentSnapshot snapshot = transaction.get(tsDoc);
                     ContentDTO contentDTO = snapshot.toObject(ContentDTO.class);
 
                     // 좋아요가 이미 눌려진 상태.
-                    if (contentDTO.getFavorites().containsKey(uid)) {
+                    if (contentDTO == null) return null;
+                    if (contentDTO.getFavorites().containsKey(mUid)) {
                         contentDTO.setFavoriteCount(contentDTO.getFavoriteCount() - 1);
-                        contentDTO.getFavorites().remove(uid);
+                        contentDTO.getFavorites().remove(mUid);
 
                         // 좋아요를 아직 안누른 상태.
                     } else {
-                        contentDTO.setFavorites(uid, true);
+                        contentDTO.setFavorites(mUid, true);
                         contentDTO.setFavoriteCount(contentDTO.getFavoriteCount() + 1);
                     }
 
@@ -177,11 +195,11 @@ public class DailyLifeFragment extends Fragment {
         }
 
         private class CustomViewHolder extends RecyclerView.ViewHolder {
-            private ItemDetailBinding iBinding;
+            private ItemDailyBinding iBinding;
 
-            public CustomViewHolder(ItemDetailBinding binding) {
-                super(binding.getRoot());
-                this.iBinding = binding;
+            public CustomViewHolder(ItemDailyBinding iBinding) {
+                super(iBinding.getRoot());
+                this.iBinding = iBinding;
 
             }
 

@@ -253,7 +253,7 @@ public class UserFragment extends Fragment {
     }
 
     private class UserFragmentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        // 얘도 마찬가지로 이미지뷰 하나만 쓸꺼라서 따로 xml 파일을 불러올 필요 없다.
+        // 이미지뷰 하나만 쓸꺼라서 따로 xml 파일을 불러올 필요 없다.
 
         private ArrayList<ContentDTO> contentDTOs;
         private String size;
@@ -288,7 +288,9 @@ public class UserFragment extends Fragment {
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             CustomViewHolder viewHolder = (CustomViewHolder) holder;
 
-            Glide.with(holder.itemView.getContext()).load(contentDTOs.get(position).getImageUrl()).apply(new RequestOptions().centerCrop()).into(viewHolder.imageView);
+            Glide.with(holder.itemView.getContext())
+                    .load(contentDTOs.get(position).getImageUrl())
+                    .apply(new RequestOptions().centerCrop()).into(viewHolder.imageView);
 
         }
 
