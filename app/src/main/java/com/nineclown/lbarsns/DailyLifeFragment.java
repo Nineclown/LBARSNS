@@ -20,10 +20,12 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
 import com.nineclown.lbarsns.databinding.FragmentDailyLifeBinding;
 import com.nineclown.lbarsns.databinding.ItemDailyBinding;
+import com.nineclown.lbarsns.model.AlarmDTO;
 import com.nineclown.lbarsns.model.ContentDTO;
 
 import java.util.ArrayList;
@@ -49,8 +51,8 @@ public class DailyLifeFragment extends Fragment {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_daily_life, container, false);
 
-        binding.dailylifeFragmentRecyclerview.setAdapter(new DetailviewFragmentRecyclerViewAdapter());
-        binding.dailylifeFragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
+        binding.dailylifefragmentRecyclerview.setAdapter(new DetailviewFragmentRecyclerViewAdapter());
+        binding.dailylifefragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         return binding.getRoot();
     }
@@ -59,7 +61,7 @@ public class DailyLifeFragment extends Fragment {
 
         private ArrayList<ContentDTO> contentDTOs;
         private ArrayList<String> contentUidList;
-        private ItemDailyBinding iBinding;
+        private ItemDailyBinding aBinding;
 
         public DetailviewFragmentRecyclerViewAdapter() {
 
@@ -69,7 +71,7 @@ public class DailyLifeFragment extends Fragment {
             // 현재 로그인된 유저의 UID(해쉬 키)
             String uid = mAuth.getCurrentUser().getUid();
 
-            mFirestore.collection("images").orderBy("timestamp").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            mFirestore.collection("images").orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
                     contentDTOs.clear();
@@ -91,8 +93,8 @@ public class DailyLifeFragment extends Fragment {
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             // 뷰를 설정하는 곳. 가져오는 곳.
-            iBinding = ItemDailyBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-            return new CustomViewHolder(iBinding);
+            aBinding = ItemDailyBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+            return new CustomViewHolder(aBinding);
 
         }
 
@@ -102,21 +104,21 @@ public class DailyLifeFragment extends Fragment {
             CustomViewHolder viewHolder = (CustomViewHolder) holder;
 
             // 유저 아이디
-            viewHolder.iBinding.dailyviewitemTextviewProfile.setText(contentDTOs.get(position).getUserId());
+            viewHolder.hBinding.dailyviewitemTextviewProfile.setText(contentDTOs.get(position).getUserId());
             //iBinding.detailviewitemProfileTextview.setText(contentDTOs.get(position).getUserId()); 이렇게 하면 뷰홀더를 안거쳐서 안되는 건가??
 
             // 이미지.  콜백 방식. 이미지를 ~~한 다음에 마지막에 into()로 결과 값을 받아서 뷰에 집어넣는대. 스레드?
             Glide.with(holder.itemView.getContext())
                     .load(contentDTOs.get(position).getImageUrl())
-                    .into(viewHolder.iBinding.dailyviewitemImageviewContent);
+                    .into(viewHolder.hBinding.dailyviewitemImageviewContent);
 
             // 설명 텍스트
-            viewHolder.iBinding.dailyviewitemTextviewExplain.setText(contentDTOs.get(position).getExplain());
+            viewHolder.hBinding.dailyviewitemTextviewExplain.setText(contentDTOs.get(position).getExplain());
 
             // 좋아요 카운터 설정
             String memo = "좋아요 " + contentDTOs.get(position).getFavoriteCount() + "개";
-            viewHolder.iBinding.dailyviewitemTextviewFavoritecounter.setText(memo);
-            viewHolder.iBinding.dailyviewitemImageviewFavorite.setOnClickListener(new View.OnClickListener() {
+            viewHolder.hBinding.dailyviewitemTextviewFavoritecounter.setText(memo);
+            viewHolder.hBinding.dailyviewitemImageviewFavorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     favoriteEvent(position);
@@ -125,15 +127,15 @@ public class DailyLifeFragment extends Fragment {
 
             // 좋아요 클릭
             if (contentDTOs.get(position).getFavorites().containsKey(mUid)) {
-                viewHolder.iBinding.dailyviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite);
+                viewHolder.hBinding.dailyviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite);
 
                 // 좋아요 다시 클릭.
             } else {
-                viewHolder.iBinding.dailyviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite_border);
+                viewHolder.hBinding.dailyviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite_border);
             }
 
             // 게시 글의 프로필 클릭. (프래그먼트 이동)
-            viewHolder.iBinding.dailyviewitemImageviewProfile.setOnClickListener(new View.OnClickListener() {
+            viewHolder.hBinding.dailyviewitemImageviewProfile.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Fragment fragment = new UserFragment();
@@ -147,7 +149,7 @@ public class DailyLifeFragment extends Fragment {
             });
 
             // 코멘트 클릭 할 때.
-            viewHolder.iBinding.dailyviewitemImageviewComment.setOnClickListener(new View.OnClickListener() {
+            viewHolder.hBinding.dailyviewitemImageviewComment.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(v.getContext(), CommentActivity.class);
@@ -166,7 +168,7 @@ public class DailyLifeFragment extends Fragment {
         }
 
 
-        private void favoriteEvent(int position) {
+        private void favoriteEvent(final int position) {
             final DocumentReference tsDoc = mFirestore.collection("images").document(contentUidList.get(position));
             mFirestore.runTransaction(new Transaction.Function<Void>() {
                 @Nullable
@@ -185,6 +187,7 @@ public class DailyLifeFragment extends Fragment {
                     } else {
                         contentDTO.setFavorites(mUid, true);
                         contentDTO.setFavoriteCount(contentDTO.getFavoriteCount() + 1);
+                        favoriteAlarm(contentDTOs.get(position).getUid());
                     }
 
                     transaction.set(tsDoc, contentDTO);
@@ -194,12 +197,24 @@ public class DailyLifeFragment extends Fragment {
 
         }
 
-        private class CustomViewHolder extends RecyclerView.ViewHolder {
-            private ItemDailyBinding iBinding;
+        private void favoriteAlarm(String destinationUid) {
+            AlarmDTO alarmDTO = new AlarmDTO();
+            alarmDTO.setDestinationUid(destinationUid);
+            alarmDTO.setUserId(mAuth.getCurrentUser().getEmail());
+            alarmDTO.setUid(mUid);
+            alarmDTO.setKind(0);
+            alarmDTO.setTimestamp(System.currentTimeMillis());
 
-            public CustomViewHolder(ItemDailyBinding iBinding) {
-                super(iBinding.getRoot());
-                this.iBinding = iBinding;
+            mFirestore.collection("alarms").document().set(alarmDTO);
+
+        }
+
+        private class CustomViewHolder extends RecyclerView.ViewHolder {
+            private ItemDailyBinding hBinding;
+
+            public CustomViewHolder(ItemDailyBinding aBinding) {
+                super(aBinding.getRoot());
+                this.hBinding = aBinding;
 
             }
 

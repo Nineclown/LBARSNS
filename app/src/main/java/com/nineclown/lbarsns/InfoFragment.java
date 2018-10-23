@@ -43,8 +43,8 @@ public class InfoFragment extends Fragment {
         //mainView = inflater.inflate(R.layout.fragment_grid, container, false);
         mFirestore = FirebaseFirestore.getInstance();
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_info, container, false);
-        binding.infoFragmentRecyclerview.setAdapter(new InfoFragmentRecyclerViewAdapter());
-        binding.infoFragmentRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        binding.infofragmentRecyclerview.setAdapter(new InfoFragmentRecyclerViewAdapter());
+        binding.infofragmentRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
         return binding.getRoot();
     }
