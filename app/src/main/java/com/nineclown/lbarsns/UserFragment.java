@@ -31,11 +31,17 @@ import com.nineclown.lbarsns.model.FollowDTO;
 
 import java.util.ArrayList;
 
+import static com.nineclown.lbarsns.R.id;
+import static com.nineclown.lbarsns.R.layout;
+import static com.nineclown.lbarsns.R.string.follow;
+import static com.nineclown.lbarsns.R.string.signout;
+
 public class UserFragment extends Fragment {
     private static final int PICK_PROFILE_FROM_ALBUM = 10;
     private FragmentUserBinding binding;
     private FirebaseFirestore mFirestore;
-
+    private MainActivity mainActivity;
+    private FirebaseAuth mAuth;
     // 현재 나의 uid
     private String mCurrentUid;
 
@@ -51,22 +57,59 @@ public class UserFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        // 뷰를 생성해주는건 최상단에 위치해야 함.
+        binding = DataBindingUtil.inflate(inflater, layout.fragment_user, container, false);
+
+        // 파이어베이스 및 변수 값들 초기화.
         mFirestore = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         mCurrentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        mainActivity = (MainActivity) getActivity();
+
+        // 프로필을 눌렀을 때,
         if (getArguments() != null) {
+
             mUid = getArguments().getString("destinationUid");
+            // 내 프로필을 눌렀을 때, (dailyLife 탭에서)
+            if (mUid != null && mUid.equals(mCurrentUid)) {
+                binding.accountBtnFollowSignout.setText(signout);
+                binding.accountBtnFollowSignout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        getActivity().finish();
+                        startActivity(new Intent(getActivity(), LoginActivity.class));
+                        mAuth.signOut();
+                    }
+                });
+            }
+            // 상대방 프로필을 눌렀을 때,
+            else {
+
+                binding.accountBtnFollowSignout.setText(follow);
+
+                mainActivity.getBinding().toolbarBtnBack.setVisibility(View.VISIBLE);
+                ;
+                mainActivity.getBinding().toolbarUsername.setVisibility(View.VISIBLE);
+                mainActivity.getBinding().toolbarTitleImage.setVisibility(View.GONE);
+                mainActivity.getBinding().toolbarUsername.setText(getArguments().getString("userId"));
+
+                mainActivity.getBinding().toolbarBtnBack.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mainActivity.getBinding().bottomNavigation.setSelectedItemId(id.action_home);
+                    }
+                });
+
+                binding.accountBtnFollowSignout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        requestFollow();
+                    }
+                });
+            }
         }
 
-        // Inflate the layout for this fragment
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_user, container, false);
 
-
-        binding.accountBtnFollowSignout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                requestFollow();
-            }
-        });
         binding.accountIvProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,6 +126,8 @@ public class UserFragment extends Fragment {
         binding.accountRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
         getProfileImage();
+        getFollower();
+        getFollowing();
         return binding.getRoot();
     }
 
@@ -163,18 +208,48 @@ public class UserFragment extends Fragment {
     private void getProfileImage() {
 
         // SnapshotListener() push- driven 형식으로 동작. DB를 계속 쳐다보다가 데이터가 변화하면 그 순간 호출된다.
-        mFirestore.collection("profileImages").document(mCurrentUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        mFirestore.collection("profileImages").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                // snapshot이 살아 있는데 뷰를 없애버리면 크러쉬가 발생한다.
+                if (documentSnapshot == null) return;
+                // assert documentSnapshot != null; //크러쉬 생기는 대신 종료시켜 버린다.
                 if (documentSnapshot.getData() != null) {
                     // store에서 가져온 데이터는 HashMap이다. 그래서 키 값으로 url을 값을 가져옴.
                     String url = (String) documentSnapshot.getData().get("image");
 
+                    if (getActivity() == null) return;
                     Glide.with(getActivity()).load(url).apply(new RequestOptions().circleCrop()).into(binding.accountIvProfile);
                 }
             }
         });
 
+    }
+
+    private void getFollower() {
+        mFirestore.collection("users").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot == null) return;
+                FollowDTO followDTO = documentSnapshot.toObject(FollowDTO.class);
+                if (followDTO == null) return;
+                String count = Integer.toString(followDTO.getFollowerCount());
+                binding.accountTvFollowerCount.setText(count);
+            }
+        });
+    }
+
+    private void getFollowing() {
+        mFirestore.collection("users").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot == null) return;
+                FollowDTO followDTO = documentSnapshot.toObject(FollowDTO.class);
+                if (followDTO == null) return;
+                String count = Integer.toString(followDTO.getFollowingCount());
+                binding.accountTvFollowingCount.setText(count);
+            }
+        });
     }
 
     private class UserFragmentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -185,9 +260,11 @@ public class UserFragment extends Fragment {
 
         public UserFragmentRecyclerViewAdapter() {
             contentDTOs = new ArrayList<>();
-            mFirestore.collection("images").whereEqualTo("uid", mCurrentUid).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            mFirestore.collection("images").whereEqualTo("uid", mUid).addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    if (queryDocumentSnapshots == null) return;
+                    //assert queryDocumentSnapshots != null;
                     for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
                         contentDTOs.add(snapshot.toObject(ContentDTO.class));
                     }

@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -76,7 +75,7 @@ public class AddPhotoActivity extends AppCompatActivity {
                 photoUri = data.getData();
                 binding.addPhotoImage.setImageURI(photoUri);
             } else if (resultCode == Activity.RESULT_CANCELED) {
-                //뒤로가기 누를때
+                //뒤로가기 누를때.
                 finish();
             }
         }

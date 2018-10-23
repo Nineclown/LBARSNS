@@ -70,6 +70,7 @@ public class DailyLifeFragment extends Fragment {
                 @Override
                 public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
                     contentDTOs.clear();
+                    if (queryDocumentSnapshots == null) return;
                     for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
                         //DB에 있는 데이터를 snapshot이라는 변수에 담은 후에, ContentDTO 데이터 형식으로 변환.
                         ContentDTO item = snapshot.toObject(ContentDTO.class);
@@ -98,19 +99,19 @@ public class DailyLifeFragment extends Fragment {
             CustomViewHolder viewHolder = (CustomViewHolder) holder;
 
             // 유저 아이디
-            viewHolder.iBinding.detailviewitemProfileTextview.setText(contentDTOs.get(position).getUserId());
+            viewHolder.iBinding.detailviewitemTextviewProfile.setText(contentDTOs.get(position).getUserId());
             //iBinding.detailviewitemProfileTextview.setText(contentDTOs.get(position).getUserId()); 이렇게 하면 뷰홀더를 안거쳐서 안되는 건가??
 
             // 이미지.  콜백 방식. 이미지를 ~~한 다음에 마지막에 into()로 결과 값을 받아서 뷰에 집어넣는대. 스레드?
             Glide.with(holder.itemView.getContext()).load(contentDTOs.get(position).getImageUrl()).into(viewHolder.iBinding.detailviewitemImageviewContent);
 
             // 설명 텍스트
-            viewHolder.iBinding.detailviewitemExplainTextview.setText(contentDTOs.get(position).getExplain());
+            viewHolder.iBinding.detailviewitemTextviewExplain.setText(contentDTOs.get(position).getExplain());
 
             // 좋아요 카운터 설정
             String memo = "좋아요 " + contentDTOs.get(position).getFavoriteCount() + "개";
-            viewHolder.iBinding.detailviewitemFavoritecounterTextview.setText(memo);
-            viewHolder.iBinding.detailviewitemFavoriteImageview.setOnClickListener(new View.OnClickListener() {
+            viewHolder.iBinding.detailviewitemTextviewFavoritecounter.setText(memo);
+            viewHolder.iBinding.detailviewitemImageviewFavorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     favoriteEvent(position);
@@ -120,20 +121,20 @@ public class DailyLifeFragment extends Fragment {
             // 좋아요 클릭
             String uid = mAuth.getCurrentUser().getUid();
             if (contentDTOs.get(position).getFavorites().containsKey(uid)) {
-                viewHolder.iBinding.detailviewitemFavoriteImageview.setImageResource(R.drawable.ic_favorite);
+                viewHolder.iBinding.detailviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite);
 
                 // 좋아요 다시 클릭.
             } else {
-                viewHolder.iBinding.detailviewitemFavoriteImageview.setImageResource(R.drawable.ic_favorite_border);
+                viewHolder.iBinding.detailviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite_border);
             }
 
-            viewHolder.iBinding.detailviewitemProfileImage.setOnClickListener(new View.OnClickListener() {
+            viewHolder.iBinding.detailviewitemImageviewProfile.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Fragment fragment = new UserFragment();
                     Bundle bundle = new Bundle();
                     bundle.putString("destinationUid", contentDTOs.get(position).getUid());
-
+                    bundle.putString("userId", contentDTOs.get(position).getUserId());
                     // 액티비티의 PutExtra와 같은 개념이 프래그먼트에서 Argument라고 생각하면 된다.
                     fragment.setArguments(bundle);
                     getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, fragment).commit();

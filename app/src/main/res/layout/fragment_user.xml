@@ -67,9 +67,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/post" />
+                        android:text="@string/follower" />
 
                     <TextView
+                        android:id="@+id/account_tv_follower_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/count_0" />
@@ -86,9 +87,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/post" />
+                        android:text="@string/following" />
 
                     <TextView
+                        android:id="@+id/account_tv_following_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/count_0" />
@@ -102,7 +104,9 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/account_recyclerview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
+            android:layout_height="match_parent">
+            
+        </android.support.v7.widget.RecyclerView>
 
 
     </LinearLayout>
