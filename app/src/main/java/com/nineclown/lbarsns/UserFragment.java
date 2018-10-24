@@ -3,10 +3,12 @@ package com.nineclown.lbarsns;
 
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.RecyclerView;
@@ -251,10 +253,12 @@ public class UserFragment extends Fragment {
 
                 if (followDTO.getFollowers().containsKey(mCurrentUid)) {
                     binding.accountBtnFollowSignout.setText(getString(R.string.follow_cancel));
-                    //binding.accountBtnFollowSignout;
+                    binding.accountBtnFollowSignout.getBackground().setColorFilter(null);
                 } else {
                     if (mUid != mCurrentUid) {
                         binding.accountBtnFollowSignout.setText(getString(R.string.follow));
+                        binding.accountBtnFollowSignout.getBackground().setColorFilter(ContextCompat.getColor(getActivity(), R.color.colorSkyBlue), PorterDuff.Mode.MULTIPLY);
+
                     }
                 }
             }

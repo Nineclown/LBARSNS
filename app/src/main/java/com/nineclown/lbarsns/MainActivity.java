@@ -20,6 +20,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.UploadTask;
 import com.nineclown.lbarsns.databinding.ActivityMainBinding;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
     private static final int PICK_PROFILE_FROM_ALBUM = 10;
     private ActivityMainBinding binding;
+    private FirebaseFirestore mFirestore;
     private FirebaseAuth mAuth;
     private String mUid;
 
@@ -37,12 +39,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         super.onCreate(savedInstanceState);
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mUid = mAuth.getCurrentUser().getUid();
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
         binding.bottomNavigation.setSelectedItemId(R.id.action_home);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+        registerPushToken();
+    }
 
+    private void registerPushToken() {
+        String pushToken = FirebaseInstanceId.getInstance().getToken();
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("pushToken", pushToken);
+        mFirestore.collection("pushtokens").document(mUid).set(map);
     }
 
     @Override
