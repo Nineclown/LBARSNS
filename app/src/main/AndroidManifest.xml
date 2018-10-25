@@ -29,7 +29,9 @@
             android:name=".CommentActivity"
             android:windowSoftInputMode="adjustPan"></activity>
 
-        <activity android:name=".AddActivity"></activity>
+        <activity android:name=".AddActivity">
+
+        </activity>
 
         <!-- [begin: fcm 푸시 메시지 관련] -->
         <meta-data
@@ -69,6 +71,7 @@
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
+        <activity android:name=".CropResultActivity" />
 
         <!-- [end: 이미지 크롭 관련 API-->
     </application>

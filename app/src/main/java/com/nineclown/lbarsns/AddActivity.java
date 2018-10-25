@@ -18,7 +18,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.croppersample.R;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -49,21 +48,21 @@ public class AddActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_add);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //getSupportActionBar().setHomeButtonEnabled(true);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
         mDrawerToggle =
                 new ActionBarDrawerToggle(
-                        this, mDrawerLayout, R.string.main_drawer_open, R.string.main_drawer_close);
+                        this, mDrawerLayout, R.string.add_drawer_open, R.string.add_drawer_close);
         mDrawerToggle.setDrawerIndicatorEnabled(true);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         if (savedInstanceState == null) {
-            setMainFragmentByPreset(CropDemoPreset.RECT);
+            setAddFragmentByPreset(CropDemoPreset.RECT);
         }
     }
 
@@ -77,7 +76,7 @@ public class AddActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main, menu);
+        inflater.inflate(R.menu.add, menu);
         return true;
     }
 
@@ -112,7 +111,7 @@ public class AddActivity extends AppCompatActivity {
                 requirePermissions = true;
                 mCropImageUri = imageUri;
                 requestPermissions(
-                        new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                         CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE);
             } else {
 
@@ -150,7 +149,7 @@ public class AddActivity extends AppCompatActivity {
             case R.id.drawer_option_load:
                 if (CropImage.isExplicitCameraPermissionRequired(this)) {
                     requestPermissions(
-                            new String[] {Manifest.permission.CAMERA},
+                            new String[]{Manifest.permission.CAMERA},
                             CropImage.CAMERA_CAPTURE_PERMISSIONS_REQUEST_CODE);
                 } else {
                     CropImage.startPickImageActivity(this);
@@ -158,23 +157,23 @@ public class AddActivity extends AppCompatActivity {
                 mDrawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_oval:
-                setMainFragmentByPreset(CropDemoPreset.CIRCULAR);
+                setAddFragmentByPreset(CropDemoPreset.CIRCULAR);
                 mDrawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_rect:
-                setMainFragmentByPreset(CropDemoPreset.RECT);
+                setAddFragmentByPreset(CropDemoPreset.RECT);
                 mDrawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_customized_overlay:
-                setMainFragmentByPreset(CropDemoPreset.CUSTOMIZED_OVERLAY);
+                setAddFragmentByPreset(CropDemoPreset.CUSTOMIZED_OVERLAY);
                 mDrawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_min_max_override:
-                setMainFragmentByPreset(CropDemoPreset.MIN_MAX_OVERRIDE);
+                setAddFragmentByPreset(CropDemoPreset.MIN_MAX_OVERRIDE);
                 mDrawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_scale_center:
-                setMainFragmentByPreset(CropDemoPreset.SCALE_CENTER_INSIDE);
+                setAddFragmentByPreset(CropDemoPreset.SCALE_CENTER_INSIDE);
                 mDrawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_toggle_scale:
@@ -269,14 +268,15 @@ public class AddActivity extends AppCompatActivity {
         }
     }
 
-    private void setMainFragmentByPreset(CropDemoPreset demoPreset) {
+    private void setAddFragmentByPreset(CropDemoPreset demoPreset) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager
                 .beginTransaction()
-                .replace(R.id.container, MainFragment.newInstance(demoPreset))
+                .replace(R.id.container, AddFragment.newInstance(demoPreset))
                 .commit();
     }
 
+    @SuppressLint("StringFormatMatches")
     private void updateDrawerTogglesByOptions(CropImageViewOptions options) {
         ((TextView) findViewById(R.id.drawer_option_toggle_scale))
                 .setText(
