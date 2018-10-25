@@ -51,6 +51,7 @@ public class ContentDTO {
         }
     }
 
+
     public ContentDTO() {
         this.explain = null;
         this.imageUrl = null;

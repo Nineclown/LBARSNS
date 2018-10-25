@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -23,7 +24,24 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity" />
+        <activity android:name=".AddPhotoActivity" />
+        <activity
+            android:name=".CommentActivity"
+            android:windowSoftInputMode="adjustPan"></activity>
 
+        <activity android:name=".AddActivity"></activity>
+
+        <!-- [begin: fcm 푸시 메시지 관련] -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/push_icon" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
+        <!-- [end: fcm 푸시 메시지 관련] -->
+
+
+        <!-- [begin: facebook 로그인 관련] -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
@@ -44,16 +62,15 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".AddPhotoActivity" />
-        <activity android:name=".CommentActivity">
+        <!-- [end: facebook 로그인 관련] -->
 
-        </activity>
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/push_icon" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/colorAccent" />
+
+        <!-- [begin: 이미지 크롭 관련 API-->
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat" />
+
+        <!-- [end: 이미지 크롭 관련 API-->
     </application>
 
 </manifest>

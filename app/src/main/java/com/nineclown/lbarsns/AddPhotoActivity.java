@@ -97,12 +97,13 @@ public class AddPhotoActivity extends AppCompatActivity {
                     throw Objects.requireNonNull(task.getException());
                 }
 
+                // url을 넘겨줘서 storage --> store로 전달하기 위한 전처리.
                 return mStorageRef.getDownloadUrl();
             }
         }).addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
-                Toast.makeText(AddPhotoActivity.this, "Successfully uploaded", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AddPhotoActivity.this, "등록 완료.", Toast.LENGTH_SHORT).show();
                 if (uri != null) {
                     // 업로드된 이미지 주소
                     String photoStringLink = uri.toString(); //YOU WILL GET THE DOWNLOAD URL HERE !!!!
@@ -125,7 +126,6 @@ public class AddPhotoActivity extends AppCompatActivity {
                     contentDTO.setTimestamp(System.currentTimeMillis());
 
                     // 게시물 댓글.
-
                     mFirestore.collection("images").document().set(contentDTO);
                     setResult(Activity.RESULT_OK);
 

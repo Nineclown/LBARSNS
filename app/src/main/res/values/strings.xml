@@ -3,9 +3,6 @@
     <string name="facebook_app_id">252264892086675</string>
     <string name="fb_login_protocol_scheme">fb252264892086675</string>
 
-    <string name="com.twitter.sdk.android.CONSUMER_KEY">0lY6xdMc8l3Bgkdep8DvfPxe4</string>
-    <string name="com.twitter.sdk.android.CONSUMER_SECRET">2Uov8wp8sQWccy1oRRes7Q3VgWfsTE1tokYHblse9TTaF0BW1b</string>
-
     <!-- Sign In -->
     <string name="email">전화번호, 이메일 주소 또는 사용자 이름</string>
     <string name="password">비밀번호</string>
@@ -64,4 +61,36 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- 이거 일단 넣어놔-->
+    <string name="app_title">Image Cropper</string>
+    <string name="result_image_desc">crop result</string>
+
+    <string name="main_drawer_load">Load Image for cropping</string>
+    <string name="main_drawer_open">Open navigation drawer</string>
+    <string name="main_drawer_close">Close navigation drawer</string>
+
+    <string name="main_action_crop">CROP</string>
+    <string name="main_action_rotate">Rotate 90 degrees clockwise</string>
+    <string name="main_action_flip">Flip</string>
+    <string name="main_action_flip_horizontally">Flip horizontally</string>
+    <string name="main_action_flip_vertically">Flip vertically</string>
+    <string name="drawer_option_title">Crop View Presets</string>
+    <string name="drawer_option_oval">Circular</string>
+    <string name="drawer_option_rect">Rectangular</string>
+    <string name="drawer_option_min_max">Min/Max limits override</string>
+    <string name="drawer_option_customized_overlay">Customized Overlay</string>
+    <string name="drawer_option_scale_center">Scale Center Inside</string>
+    <string name="drawer_option_title2">Customization Toggles</string>
+    <string name="drawer_option_toggle_scale">Image Scale: %1s</string>
+    <string name="drawer_option_toggle_shape">Crop Shape: %1s</string>
+    <string name="drawer_option_toggle_guidelines">Guidelines: %1s</string>
+    <string name="drawer_option_toggle_aspect_ratio">Aspect Ratio: %1s</string>
+    <string name="drawer_option_toggle_auto_zoom">Auto zoom: %1s</string>
+    <string name="drawer_option_toggle_max_zoom">Max zoom level: %1s</string>
+    <string name="drawer_option_set_initial_crop_rect">Set initial crop rectangle</string>
+    <string name="drawer_option_reset_crop_rect">Reset crop rectangle to initial</string>
+    <string name="drawer_option_toggle_multitouch">Multitouch: %1s</string>
+    <string name="drawer_option_toggle_show_overlay">Show Overlay: %1s</string>
+    <string name="drawer_option_toggle_show_progress_bar">Show Progress Bar: %1s</string>
 </resources>

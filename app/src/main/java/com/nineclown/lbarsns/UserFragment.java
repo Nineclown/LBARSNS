@@ -25,6 +25,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
 import com.nineclown.lbarsns.databinding.FragmentUserBinding;
@@ -43,6 +44,7 @@ public class UserFragment extends Fragment {
     private static final int PICK_PROFILE_FROM_ALBUM = 10;
     private FragmentUserBinding binding;
     private FirebaseFirestore mFirestore;
+    private FcmPush fcmPush;
     private MainActivity mainActivity;
     private FirebaseAuth mAuth;
     // 현재 나의 uid
@@ -50,6 +52,13 @@ public class UserFragment extends Fragment {
 
     // 내가 선택한 uid
     private String mUid;
+
+
+    private ListenerRegistration followListenerRegistration;
+    private ListenerRegistration followingListenerRegistration;
+    private ListenerRegistration imageProfileListenerRegistration;
+    private ListenerRegistration recyclerListenerRegistration;
+
 
     public UserFragment() {
         // Required empty public constructor
@@ -64,6 +73,7 @@ public class UserFragment extends Fragment {
         binding = DataBindingUtil.inflate(inflater, layout.fragment_user, container, false);
 
         // 파이어베이스 및 변수 값들 초기화.
+        fcmPush = FcmPush.getInstance();
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mCurrentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -125,13 +135,31 @@ public class UserFragment extends Fragment {
             }
         });
 
-        binding.accountRecyclerview.setAdapter(new UserFragmentRecyclerViewAdapter());
-        binding.accountRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 화면을 다시 이쪽으로 가져올때 스냅샷도 불러온다. onCreate에 붙여놓는게 더 안정적일 수 있다.
         getProfileImage();
         getFollower();
         getFollowing();
-        return binding.getRoot();
+        binding.accountRecyclerview.setAdapter(new UserFragmentRecyclerViewAdapter());
+        binding.accountRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        // 스냅샷 리스너들이 화면이 이동하면 꺼지도록 구현.
+        followListenerRegistration.remove();
+        followingListenerRegistration.remove();
+        imageProfileListenerRegistration.remove();
+        recyclerListenerRegistration.remove();
     }
 
     private void requestFollow() {
@@ -212,12 +240,11 @@ public class UserFragment extends Fragment {
     private void getProfileImage() {
 
         // SnapshotListener() push- driven 형식으로 동작. DB를 계속 쳐다보다가 데이터가 변화하면 그 순간 호출된다.
-        mFirestore.collection("profileImages").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+       imageProfileListenerRegistration = mFirestore.collection("profileImages").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 // snapshot이 살아 있는데 뷰를 없애버리면 크러쉬가 발생한다.
                 if (documentSnapshot == null) return;
-                // assert documentSnapshot != null; //크러쉬 생기는 대신 종료시켜 버린다.
                 if (documentSnapshot.getData() != null) {
                     // store에서 가져온 데이터는 HashMap이다. 그래서 키 값으로 url을 값을 가져옴.
                     String url = (String) documentSnapshot.getData().get("image");
@@ -239,10 +266,13 @@ public class UserFragment extends Fragment {
         alarmDTO.setTimestamp(System.currentTimeMillis());
 
         mFirestore.collection("alarms").document().set(alarmDTO);
+
+        String message = mAuth.getCurrentUser().getEmail() + getString(R.string.alarm_follow);
+        fcmPush.sendMessage(destinationUid, "알림 메시지", message);
     }
 
     private void getFollower() {
-        mFirestore.collection("users").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        followListenerRegistration = mFirestore.collection("users").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if (documentSnapshot == null) return;
@@ -267,7 +297,7 @@ public class UserFragment extends Fragment {
     }
 
     private void getFollowing() {
-        mFirestore.collection("users").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        followingListenerRegistration = mFirestore.collection("users").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if (documentSnapshot == null) return;
@@ -287,7 +317,7 @@ public class UserFragment extends Fragment {
 
         public UserFragmentRecyclerViewAdapter() {
             contentDTOs = new ArrayList<>();
-            mFirestore.collection("images").whereEqualTo("uid", mUid).addSnapshotListener(new EventListener<QuerySnapshot>() {
+          recyclerListenerRegistration = mFirestore.collection("images").whereEqualTo("uid", mUid).addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                     if (queryDocumentSnapshots == null) return;

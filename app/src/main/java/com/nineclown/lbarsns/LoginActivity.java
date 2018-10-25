@@ -52,7 +52,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_login);
 
-
         // Buttons
         findViewById(R.id.sign_in_button).setOnClickListener(this);
         findViewById(R.id.sign_up_button).setOnClickListener(this);
@@ -73,7 +72,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         // [START initialize_auth]
         mAuth = FirebaseAuth.getInstance();
         // [END initialize_auth]
+
+        //printHashKey(this);
     }
+
+    /*public void printHashKey(Context pContext) {
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                String hashKey = new String(Base64.encode(md.digest(), 0));
+                Log.i(TAG, "printHashKey() Hash Key: " + hashKey);
+            }
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "printHashKey()", e);
+        } catch (Exception e) {
+            Log.e(TAG, "printHashKey()", e);
+        }
+    }
+*/
+
 
     // [START on_start_check_user]
     @Override
@@ -130,7 +149,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
-                            Toast.makeText(LoginActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
+                            String message = task.getException().getMessage();
+                            Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
                             updateUI(null);
                         }
                     }
@@ -148,7 +168,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         String email = binding.fieldEmail.getText().toString();
         if (TextUtils.isEmpty(email)) {
-            binding.fieldEmail.setError("빈 칸.");
+            binding.fieldEmail.setError("빈 칸");
             valid = false;
         } else {
             binding.fieldEmail.setError(null);
@@ -156,7 +176,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         String password = binding.fieldPassword.getText().toString();
         if (TextUtils.isEmpty(password)) {
-            binding.fieldPassword.setError("빈 칸.");
+            binding.fieldPassword.setError("빈 칸");
             valid = false;
         } else {
             binding.fieldPassword.setError(null);
@@ -180,6 +200,39 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         startActivityForResult(signInIntent, GOOGLE_LOGIN_CODE);
     }
 
+    private void signWithFacebook() {
+        // [START initialize_fblogin]
+        LoginManager.getInstance()
+                .logInWithReadPermissions(this, Arrays.asList("public_profile", "email"));
+        LoginManager.getInstance()
+                .registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult) {
+                        // 페이스북에 로그인 성공한 경우, 내 어플에 로그인이 된게 아니라. 페이스북에 로그인 된 경우.
+                        firebaseAuthWithFacebook(loginResult.getAccessToken());
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        // 로그인 취소한 경우.
+                        Log.d(TAG, "facebook:onCancel");
+                        // [START_EXCLUDE]
+                        updateUI(null);
+                        // [END_EXCLUDE]
+                    }
+
+                    @Override
+                    public void onError(FacebookException error) {
+                        Log.d(TAG, "facebook:onError", error);
+                        // [START_EXCLUDE]
+                        updateUI(null);
+                        // [END_EXCLUDE]
+                    }
+                });
+
+        // [END initialize_fblogin]
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -197,6 +250,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e);
+                Toast.makeText(this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 // [START_EXCLUDE]
                 updateUI(null);
                 // [END_EXCLUDE]
@@ -208,8 +262,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     // [START auth_with_google]
     private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
-        Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
-
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -233,43 +285,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
     // [END auth_with_google]
 
-
-    private void signWithFacebook() {
-
-        // [START initialize_fblogin]
-        LoginManager.getInstance()
-                .logInWithReadPermissions(this, Arrays.asList("public_profile", "email"));
-        LoginManager.getInstance()
-                .registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
-                    @Override
-                    public void onSuccess(LoginResult loginResult) {
-                        handleFacebookAccessToken(loginResult.getAccessToken());
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        Log.d(TAG, "facebook:onCancel");
-                        // [START_EXCLUDE]
-                        updateUI(null);
-                        // [END_EXCLUDE]
-                    }
-
-                    @Override
-                    public void onError(FacebookException error) {
-                        Log.d(TAG, "facebook:onError", error);
-                        // [START_EXCLUDE]
-                        updateUI(null);
-                        // [END_EXCLUDE]
-                    }
-                });
-
-        // [END initialize_fblogin]
-
-
-    }
-
     // [START auth_with_facebook]
-    private void handleFacebookAccessToken(AccessToken token) {
+    private void firebaseAuthWithFacebook(AccessToken token) {
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -277,10 +294,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
+                            Toast.makeText(LoginActivity.this, "로그인 되었습니다.", Toast.LENGTH_SHORT).show();
                             FirebaseUser user = mAuth.getCurrentUser();
                             updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
+                            Toast.makeText(LoginActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                             updateUI(null);
                         }
 

@@ -19,6 +19,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.nineclown.lbarsns.databinding.FragmentInfoBinding;
 import com.nineclown.lbarsns.model.ContentDTO;
@@ -29,6 +30,7 @@ public class InfoFragment extends Fragment {
 
     private FirebaseFirestore mFirestore;
     private FragmentInfoBinding binding;
+    private ListenerRegistration infoListenerRegistration;
 
     public InfoFragment() {
         // Required empty public constructor
@@ -43,10 +45,22 @@ public class InfoFragment extends Fragment {
         //mainView = inflater.inflate(R.layout.fragment_grid, container, false);
         mFirestore = FirebaseFirestore.getInstance();
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_info, container, false);
+
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         binding.infofragmentRecyclerview.setAdapter(new InfoFragmentRecyclerViewAdapter());
         binding.infofragmentRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
-        return binding.getRoot();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        infoListenerRegistration.remove();
     }
 
     private class InfoFragmentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -56,17 +70,18 @@ public class InfoFragment extends Fragment {
         public InfoFragmentRecyclerViewAdapter() {
             contentDTOs = new ArrayList<>();
 
-            mFirestore.collection("images").orderBy("timestamp").addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                    if (queryDocumentSnapshots == null) return;
-                    for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
-                        contentDTOs.add(snapshot.toObject(ContentDTO.class));
-                    }
-                    notifyDataSetChanged();
-                    // 새로고침을 하면, 리사이클러 뷰 메소드들이 다 다시 동작한데, 밑에 있는 onBind, onCerate, getItem 다.
-                }
-            });
+            infoListenerRegistration = mFirestore.collection("images").orderBy("timestamp")
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                            if (queryDocumentSnapshots == null) return;
+                            for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
+                                contentDTOs.add(snapshot.toObject(ContentDTO.class));
+                            }
+                            notifyDataSetChanged();
+                            // 새로고침을 하면, 리사이클러 뷰 메소드들이 다 다시 동작한데, 밑에 있는 onBind, onCerate, getItem 다.
+                        }
+                    });
         }
 
         @Override
@@ -84,7 +99,8 @@ public class InfoFragment extends Fragment {
             CustomViewHolder viewHolder = (CustomViewHolder) holder;
 
             // viewHolder.imageView.setImageResource(R.drawable.btn_signin_facebook);
-            Glide.with(holder.itemView.getContext()).load(contentDTOs.get(position).getImageUrl()).apply(new RequestOptions().centerCrop()).into(viewHolder.imageView);
+            Glide.with(holder.itemView.getContext()).load(contentDTOs.get(position).getImageUrl())
+                    .apply(new RequestOptions().centerCrop()).into(viewHolder.imageView);
             viewHolder.imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

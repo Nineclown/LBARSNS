@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,6 +23,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
@@ -37,9 +39,11 @@ import java.util.HashMap;
 public class DailyLifeFragment extends Fragment {
 
     private FragmentDailyLifeBinding binding;
+    private FcmPush fcmPush;
     private FirebaseFirestore mFirestore;
     private FirebaseAuth mAuth;
     private String mUid;
+    private ListenerRegistration imageListenerRegistration;
 
     public DailyLifeFragment() {
         // Required empty public constructor
@@ -52,13 +56,27 @@ public class DailyLifeFragment extends Fragment {
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mUid = mAuth.getCurrentUser().getUid();
+        fcmPush = FcmPush.getInstance();
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_daily_life, container, false);
 
+
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         binding.dailylifefragmentRecyclerview.setAdapter(new DailyLifeRecyclerViewAdapter());
         binding.dailylifefragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        return binding.getRoot();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (imageListenerRegistration != null)
+            imageListenerRegistration.remove();
     }
 
     private class DailyLifeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -89,26 +107,28 @@ public class DailyLifeFragment extends Fragment {
 
         private void getContents(final HashMap<String, Boolean> following) {
             // 이미지를 가져오는 코드
-            mFirestore.collection("images").orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
-                    contentDTOs.clear();
-                    if (queryDocumentSnapshots == null) return;
-                    for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
-                        //DB에 있는 데이터를 snapshot이라는 변수에 담은 후에, ContentDTO 데이터 형식으로 변환.
-                        ContentDTO item = snapshot.toObject(ContentDTO.class);
+            imageListenerRegistration = mFirestore.collection("images").orderBy("timestamp", Query.Direction.DESCENDING)
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+                            if (queryDocumentSnapshots == null) return;
+                            contentDTOs.clear();
+                            contentUidList.clear(); //이거 있으면 머가 달라지냐?
+                            for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
+                                //DB에 있는 데이터를 snapshot이라는 변수에 담은 후에, ContentDTO 데이터 형식으로 변환.
+                                ContentDTO item = snapshot.toObject(ContentDTO.class);
 
-                        // 모든 이미지를 다돌아다니면서 현재 로그인한 사용자가 팔로잉하고 있는 사람의 글을 가져온다.
-                        if (following.keySet().contains(item.getUid()))
-                            contentDTOs.add(item);
-                        contentUidList.add(snapshot.getId());
-                    }
+                                // 모든 이미지를 다돌아다니면서 현재 로그인한 사용자가 팔로잉하고 있는 사람의 글을 가져온다.
+                                if (following.keySet().contains(item.getUid()))
+                                    contentDTOs.add(item);
+                                contentUidList.add(snapshot.getId());
+                            }
 
-                    // 새로고침 해주는 역할. push-driven 방식이라서,
-                    // DB가 바뀐걸 감지할 때마다 뿌려주기 위해 mFireStore.collection()~~~ 이 구문 안에 있어야 한다.
-                    notifyDataSetChanged();
-                }
-            });
+                            // 새로고침 해주는 역할. push-driven 방식이라서,
+                            // DB가 바뀐걸 감지할 때마다 뿌려주기 위해 mFireStore.collection()~~~ 이 구문 안에 있어야 한다.
+                            notifyDataSetChanged();
+                        }
+                    });
         }
 
         @Override
@@ -120,10 +140,24 @@ public class DailyLifeFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+        public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
             // 뷰 안의 데이터를 설정하는 곳.
-            CustomViewHolder viewHolder = (CustomViewHolder) holder;
+            final CustomViewHolder viewHolder = (CustomViewHolder) holder;
 
+            mFirestore.collection("profileImages")
+                    .document(contentDTOs.get(position).getUid()).get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            // 사진에 프로필
+                            if (task.isSuccessful()) {
+                                Object url = task.getResult().get("image");
+                                Glide.with(holder.itemView.getContext()).load(url)
+                                        .apply(new RequestOptions().circleCrop())
+                                        .into(viewHolder.hBinding.dailyviewitemImageviewProfile);
+                            }
+                        }
+                    });
             // 유저 아이디
             viewHolder.hBinding.dailyviewitemTextviewProfile.setText(contentDTOs.get(position).getUserId());
             //iBinding.detailviewitemProfileTextview.setText(contentDTOs.get(position).getUserId()); 이렇게 하면 뷰홀더를 안거쳐서 안되는 건가??
@@ -191,6 +225,7 @@ public class DailyLifeFragment extends Fragment {
         }
 
 
+        // 좋아요를 눌렀을 때 발생하는 이벤트
         private void favoriteEvent(final int position) {
             final DocumentReference tsDoc = mFirestore.collection("images").document(contentUidList.get(position));
             mFirestore.runTransaction(new Transaction.Function<Void>() {
@@ -220,6 +255,7 @@ public class DailyLifeFragment extends Fragment {
 
         }
 
+        // 좋아요를 누르면 알람을 보내는 함수.
         private void favoriteAlarm(String destinationUid) {
             AlarmDTO alarmDTO = new AlarmDTO();
             alarmDTO.setDestinationUid(destinationUid);
@@ -229,6 +265,8 @@ public class DailyLifeFragment extends Fragment {
             alarmDTO.setTimestamp(System.currentTimeMillis());
 
             mFirestore.collection("alarms").document().set(alarmDTO);
+            String message = mAuth.getCurrentUser().getEmail() + getString(R.string.alarm_favorite);
+            fcmPush.sendMessage(destinationUid, "알림 메시지", message);
 
         }
 

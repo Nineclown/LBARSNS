@@ -16,12 +16,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.nineclown.lbarsns.databinding.ActivityMainBinding;
 
@@ -30,6 +32,7 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
     private static final int PICK_PROFILE_FROM_ALBUM = 10;
     private ActivityMainBinding binding;
+    private FirebaseStorage mStorage;
     private FirebaseFirestore mFirestore;
     private FirebaseAuth mAuth;
     private String mUid;
@@ -37,11 +40,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+
+        // firebase
+        mStorage = FirebaseStorage.getInstance();
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mUid = mAuth.getCurrentUser().getUid();
+
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
         binding.bottomNavigation.setSelectedItemId(R.id.action_home);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
@@ -52,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         String pushToken = FirebaseInstanceId.getInstance().getToken();
         HashMap<String, Object> map = new HashMap<>();
         map.put("pushToken", pushToken);
-        mFirestore.collection("pushtokens").document(mUid).set(map);
+        mFirestore.collection("pushTokens").document(mUid).set(map);
     }
 
     @Override
@@ -68,16 +74,39 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         if (requestCode == PICK_PROFILE_FROM_ALBUM && resultCode == Activity.RESULT_OK) {
             Uri imageUri = data.getData();
-            //final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            FirebaseStorage.getInstance().getReference().child("userProfileImages").child(mUid).putFile(imageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+
+            // 일단 프로필 사진을 storage에 올린다.
+            final StorageReference reference = mStorage.getReference().child("userProfileImages").child(mUid);
+            UploadTask uploadTask = reference.putFile(imageUri);
+
+            Task<Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
-                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                    String url = task.getResult().getDownloadUrl().toString();
-                    HashMap<String, Object> map = new HashMap<>();
-                    map.put("image", url);
-                    FirebaseFirestore.getInstance().collection("profileImages").document(mUid).set(map);
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+
+                    // Continue with the task to get the download URL
+                    return reference.getDownloadUrl();
+                }
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                @Override
+                public void onComplete(@NonNull Task<Uri> task) {
+                    if (task.isSuccessful()) {
+                        Uri downloadUri = task.getResult();
+                        String url = downloadUri.toString();
+
+                        HashMap<String, Object> map = new HashMap<>();
+                        map.put("image", url);
+                        FirebaseFirestore.getInstance().collection("profileImages").document(mUid).set(map);
+
+                    } else {
+                        // Handle failures
+                        // ...
+                    }
                 }
             });
+
         }
     }
 
@@ -101,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             case R.id.action_add_photo: {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(new Intent(this, AddPhotoActivity.class));
+                    startActivity(new Intent(this, AddActivity.class));
                 }
 
                 return true;

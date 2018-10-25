@@ -2,6 +2,7 @@ package com.nineclown.lbarsns;
 
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,6 +11,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -27,6 +32,7 @@ public class CommentActivity extends AppCompatActivity {
     private ActivityCommentBinding binding;
     private FirebaseAuth mAuth;
     private FirebaseFirestore mFirestore;
+    private FcmPush fcmPush;
     private String mUid;
     private String contentUid;
     private String destinationUid;
@@ -40,6 +46,7 @@ public class CommentActivity extends AppCompatActivity {
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mUid = mAuth.getCurrentUser().getUid();
+        fcmPush = FcmPush.getInstance();
 
         // fragment는 argument, activity는 intent를 통해 데이터를 받아온다.
         // 그리고 content의 id를 받아오는 부분이 recyclerview를 붙이는 부분 보다 위에 위치해야 한다. 아래에 위치하면 null 이 들어감.
@@ -79,6 +86,9 @@ public class CommentActivity extends AppCompatActivity {
         alarmDTO.setTimestamp(System.currentTimeMillis());
 
         mFirestore.collection("alarms").document().set(alarmDTO);
+
+        String msg = mAuth.getCurrentUser().getEmail() + getString(R.string.alarm_who) + message + getString(R.string.alarm_comment);
+        fcmPush.sendMessage(destinationUid, "알림 메시지", message);
     }
 
     private class CommentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -112,8 +122,23 @@ public class CommentActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            CustomViewHolder viewHolder = (CustomViewHolder) holder;
+        public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+            final CustomViewHolder viewHolder = (CustomViewHolder) holder;
+
+            mFirestore.collection("profileImages")
+                    .document(comments.get(position).getUid()).get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            // 사진에 프로필
+                            if(task.isSuccessful()) {
+                                Object url = task.getResult().get("image");
+                                Glide.with(holder.itemView.getContext()).load(url)
+                                        .apply(new RequestOptions().circleCrop())
+                                        .into(viewHolder.iBinding.commentviewitemImageviewProfile);
+                            }
+                        }
+                    });
 
             viewHolder.iBinding.commentviewitemTextviewComment.setText(comments.get(position).getComment());
             viewHolder.iBinding.commentviewitemTextviewProfile.setText(comments.get(position).getUserId());
