@@ -1,6 +1,7 @@
 package com.nineclown.lbarsns;
 
 
+import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -32,7 +33,7 @@ import com.nineclown.lbarsns.model.AlarmDTO;
 
 import java.util.ArrayList;
 
-public class AlarmFragment extends Fragment {
+public class AlarmFragment extends Fragment implements MainActivity.OnBackPressedListener {
 
     private FragmentAlarmBinding binding;
 
@@ -73,6 +74,38 @@ public class AlarmFragment extends Fragment {
     public void onStop() {
         super.onStop();
         alarmListenerRegistration.remove();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // 리스너를 설정하기 위해 메인을 가져온다. (이미 상단에 전역으로 갖고 있네?)
+        MainActivity mainActivity = (MainActivity) getActivity();
+        // 이 메소드로 들어온다 == 뒤로가기를 눌렀다.
+        // null 처리
+        if (mainActivity == null) return;
+        mainActivity.setOnBackPressedListener(null);
+
+
+        // [START return to daily life fragment]
+        // 프래그먼트 전환 과정
+        DailyLifeFragment dailyLifeFragment = new DailyLifeFragment();
+        getActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, dailyLifeFragment)
+                .addToBackStack()
+                .commit();
+
+        // BottomNavigationView 전환 과정
+        mainActivity.getBinding().bottomNavigation.setSelectedItemId(R.id.action_home);
+        // [END return to daily life fragment]
+    }
+
+
+    // Fragment 호출시 반드시 호출되는 오버라이드 메소드라는데, 역할이 머야.
+    // 어떤 액티비티에 붙을건지를 설정하는 것 같음.
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        ((MainActivity) context).setOnBackPressedListener(this);
     }
 
     private class AlarmRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

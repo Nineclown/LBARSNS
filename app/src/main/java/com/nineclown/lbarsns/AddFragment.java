@@ -84,6 +84,7 @@ public final class AddFragment extends Fragment
      * Set the initial rectangle to use.
      */
     public void setInitialCropRect() {
+        int width = getResources().getDisplayMetrics().widthPixels;
         mCropImageView.setCropRect(new Rect(100, 300, 500, 1200));
     }
 

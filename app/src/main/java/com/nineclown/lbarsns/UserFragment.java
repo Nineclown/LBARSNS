@@ -1,6 +1,7 @@
 package com.nineclown.lbarsns;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.PorterDuff;
@@ -40,7 +41,7 @@ import static com.nineclown.lbarsns.R.layout;
 import static com.nineclown.lbarsns.R.string.follow;
 import static com.nineclown.lbarsns.R.string.signout;
 
-public class UserFragment extends Fragment {
+public class UserFragment extends Fragment implements MainActivity.OnBackPressedListener {
     private static final int PICK_PROFILE_FROM_ALBUM = 10;
     private FragmentUserBinding binding;
     private FirebaseFirestore mFirestore;
@@ -242,7 +243,7 @@ public class UserFragment extends Fragment {
     private void getProfileImage() {
 
         // SnapshotListener() push- driven 형식으로 동작. DB를 계속 쳐다보다가 데이터가 변화하면 그 순간 호출된다.
-       imageProfileListenerRegistration = mFirestore.collection("profileImages").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        imageProfileListenerRegistration = mFirestore.collection("profileImages").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 // snapshot이 살아 있는데 뷰를 없애버리면 크러쉬가 발생한다.
@@ -311,6 +312,35 @@ public class UserFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        // 리스너를 설정하기 위해 메인을 가져온다. (이미 상단에 전역으로 갖고 있네?)
+
+        // 이 메소드로 들어온다 == 뒤로가기를 눌렀다.
+        // null 처리
+        if (mainActivity == null) return;
+        mainActivity.setOnBackPressedListener(null);
+
+
+        // [START return to daily life fragment]
+        // 프래그먼트 전환 과정
+        DailyLifeFragment dailyLifeFragment = new DailyLifeFragment();
+        getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, dailyLifeFragment).commit();
+
+        // BottomNavigationView 전환 과정
+        mainActivity.getBinding().bottomNavigation.setSelectedItemId(id.action_home);
+        // [END return to daily life fragment]
+    }
+
+
+    // Fragment 호출시 반드시 호출되는 오버라이드 메소드라는데, 역할이 머야.
+    // 어떤 액티비티에 붙을건지를 설정하는 것 같음.
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        ((MainActivity) context).setOnBackPressedListener(this);
+    }
+
     private class UserFragmentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         // 이미지뷰 하나만 쓸꺼라서 따로 xml 파일을 불러올 필요 없다.
 
@@ -319,7 +349,7 @@ public class UserFragment extends Fragment {
 
         public UserFragmentRecyclerViewAdapter() {
             contentDTOs = new ArrayList<>();
-          recyclerListenerRegistration = mFirestore.collection("images").whereEqualTo("uid", mUid).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            recyclerListenerRegistration = mFirestore.collection("images").whereEqualTo("uid", mUid).addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                     if (queryDocumentSnapshots == null) return;

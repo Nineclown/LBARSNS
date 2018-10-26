@@ -1,21 +1,96 @@
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <ImageView
-        android:id="@+id/resultImageView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:contentDescription="@string/result_image_desc"
-        android:onClick="onImageViewClicked"/>
+        android:orientation="vertical"
+        tools:context=".CropResultActivity">
 
-    <TextView
-        android:id="@+id/resultImageText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:background="#7000"
-        android:textIsSelectable="true"/>
+        <!-- Toolbar -->
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/my_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="40dp">
 
-</FrameLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="3dp"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/logo_title" />
+
+                <TextView
+                    android:id="@+id/cropresult_btn_upload"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerInParent="true"
+                    android:text="@string/upload_image"
+                    android:textColor="@color/colorSkyBlue"
+                    android:layout_marginEnd="10dp"
+                    android:textSize="16sp" />
+
+            </RelativeLayout>
+
+        </android.support.v7.widget.Toolbar>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorDeepGray" />
+
+        <RelativeLayout
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/cropresult_image"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerInParent="true"
+                tools:src="@drawable/ic_account" />
+
+            <EditText
+                android:textSize="15sp"
+                android:id="@+id/cropresult_edit_explain"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_centerInParent="true"
+                android:layout_toEndOf="@+id/cropresult_image"
+                android:hint="@string/Write_text" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="20dp"
+            android:background="@color/colorLightGray" />
+
+        <TextView
+            android:textStyle="bold"
+            android:layout_margin="10dp"
+            android:id="@+id/cropresult_textview_addgps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_gps" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/cropresult_textview_addgps"
+            android:layout_marginBottom="20dp"
+            android:background="@color/colorLightGray" />
+    </LinearLayout>
+</layout>

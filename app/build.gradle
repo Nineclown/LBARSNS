@@ -26,6 +26,8 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.1.1'
     // image crop
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.0'
+    implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
+
     // Material Design
     implementation 'com.android.support:design:27.1.1'
     // 파이러베이스 코어

@@ -38,13 +38,13 @@ public final class CropResultActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_crop_result);
 
-        imageView = ((ImageView) findViewById(R.id.resultImageView));
-        imageView.setBackgroundResource(R.drawable.backdrop);
+        imageView = ((ImageView) findViewById(R.id.cropresult_image));
+        //imageView.setBackgroundResource(R.drawable.backdrop);
 
         Intent intent = getIntent();
         if (mImage != null) {
             imageView.setImageBitmap(mImage);
-            int sampleSize = intent.getIntExtra("SAMPLE_SIZE", 1);
+            /*int sampleSize = intent.getIntExtra("SAMPLE_SIZE", 1);
             double ratio = ((int) (10 * mImage.getWidth() / (double) mImage.getHeight())) / 10d;
             int byteCount = 0;
             byteCount = mImage.getByteCount() / 1024;
@@ -60,7 +60,7 @@ public final class CropResultActivity extends Activity {
                             + ", Bytes: "
                             + byteCount
                             + "K";
-            ((TextView) findViewById(R.id.resultImageText)).setText(desc);
+            *///((TextView) findViewById(R.id.resultImageText)).setText(desc);
         } else {
             Uri imageUri = intent.getParcelableExtra("URI");
             if (imageUri != null) {

@@ -32,6 +32,7 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
     private static final int PICK_PROFILE_FROM_ALBUM = 10;
     private ActivityMainBinding binding;
+    private OnBackPressedListener mListener;
     private FirebaseStorage mStorage;
     private FirebaseFirestore mFirestore;
     private FirebaseAuth mAuth;
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     protected void onResume() {
         super.onResume();
-        binding.bottomNavigation.setSelectedItemId(R.id.action_home);
+        //binding.bottomNavigation.setSelectedItemId(R.id.action_home);
 
     }
 
@@ -130,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             case R.id.action_add_photo: {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(new Intent(this, CameraCropActivity.class));
+                    startActivity(new Intent(this, AddActivity.class));
                 }
 
                 return true;
@@ -150,8 +151,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 getSupportFragmentManager().beginTransaction().replace(R.id.main_content, userFragment).commit();
                 return true;
             }
-
-
         }
 
         return false;
@@ -166,4 +165,31 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         binding.toolbarUsername.setVisibility(View.GONE);
         binding.toolbarTitleImage.setVisibility(View.VISIBLE);
     }
+
+    public interface OnBackPressedListener {
+        public void onBackPressed();
+    }
+
+    public void setOnBackPressedListener(OnBackPressedListener listener) {
+        mListener = listener;
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        // Fragment에서 listener를 달았을 때 여기로 처리 된다.
+        if (mListener != null) {
+            mListener.onBackPressed();
+        }
+        // listener를 안달았을 경우, 여기에서 처리된다.
+        else {
+
+            super.onBackPressed();
+            finish();
+            // 이게 무슨 구문인지 안배웠는데.
+            android.os.Process.killProcess(android.os.Process.myPid());
+        }
+
+    }
 }
+
