@@ -27,10 +27,11 @@ import com.nineclown.lbarsns.model.ContentDTO;
 
 import java.util.ArrayList;
 
-public class InfoFragment extends Fragment implements MainActivity.OnBackPressedListener{
+public class InfoFragment extends Fragment implements MainActivity.OnBackPressedListener {
 
     private FirebaseFirestore mFirestore;
     private FragmentInfoBinding binding;
+    private MainActivity mainActivity;
     private ListenerRegistration infoListenerRegistration;
 
     public InfoFragment() {
@@ -41,19 +42,21 @@ public class InfoFragment extends Fragment implements MainActivity.OnBackPressed
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_info, container, false);
 
         //mainView = inflater.inflate(R.layout.fragment_grid, container, false);
         mFirestore = FirebaseFirestore.getInstance();
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_info, container, false);
+        mainActivity = (MainActivity) getActivity();
 
+
+        binding.infofragmentRecyclerview.setAdapter(new InfoFragmentRecyclerViewAdapter());
+        binding.infofragmentRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         return binding.getRoot();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        binding.infofragmentRecyclerview.setAdapter(new InfoFragmentRecyclerViewAdapter());
-        binding.infofragmentRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
     }
 
@@ -66,18 +69,25 @@ public class InfoFragment extends Fragment implements MainActivity.OnBackPressed
     @Override
     public void onBackPressed() {
         // 리스너를 설정하기 위해 메인을 가져온다. (이미 상단에 전역으로 갖고 있네?)
-        MainActivity mainActivity = (MainActivity) getActivity();
         // 이 메소드로 들어온다 == 뒤로가기를 눌렀다.
         // null 처리
-        if (mainActivity == null) return;
+        if (mainActivity == null) {
+            return;
+        }
         mainActivity.setOnBackPressedListener(null);
-
 
         // [START return to daily life fragment]
         // 프래그먼트 전환 과정
-        DailyLifeFragment dailyLifeFragment = new DailyLifeFragment();
-        getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, dailyLifeFragment).commit();
+        //DailyLifeFragment dailyLifeFragment = new DailyLifeFragment();
+        /*mainActivity.getSupportFragmentManager().beginTransaction()
+                .remove(this).commit();
+        mainActivity.getSupportFragmentManager()
+                .popBackStack();*/
 
+        /*        .replace(R.id.main_content, dailyLifeFragment)
+                .addToBackStack(null)
+                .commit();
+*/
         // BottomNavigationView 전환 과정
         mainActivity.getBinding().bottomNavigation.setSelectedItemId(R.id.action_home);
         // [END return to daily life fragment]

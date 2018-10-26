@@ -36,7 +36,7 @@ import java.util.ArrayList;
 public class AlarmFragment extends Fragment implements MainActivity.OnBackPressedListener {
 
     private FragmentAlarmBinding binding;
-
+    private MainActivity mainActivity;
     private FirebaseFirestore mFirestore;
     private FirebaseAuth mAuth;
     private String mUid;
@@ -59,14 +59,18 @@ public class AlarmFragment extends Fragment implements MainActivity.OnBackPresse
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mUid = mAuth.getCurrentUser().getUid();
+
+        mainActivity = (MainActivity) getActivity();
+
+        binding.alarmfragmentRecyclerview.setAdapter(new AlarmRecyclerViewAdapter());
+        binding.alarmfragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
+
         return binding.getRoot();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        binding.alarmfragmentRecyclerview.setAdapter(new AlarmRecyclerViewAdapter());
-        binding.alarmfragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
 
     }
 
@@ -79,22 +83,12 @@ public class AlarmFragment extends Fragment implements MainActivity.OnBackPresse
     @Override
     public void onBackPressed() {
         // 리스너를 설정하기 위해 메인을 가져온다. (이미 상단에 전역으로 갖고 있네?)
-        MainActivity mainActivity = (MainActivity) getActivity();
         // 이 메소드로 들어온다 == 뒤로가기를 눌렀다.
         // null 처리
         if (mainActivity == null) return;
         mainActivity.setOnBackPressedListener(null);
 
-
         // [START return to daily life fragment]
-        // 프래그먼트 전환 과정
-        DailyLifeFragment dailyLifeFragment = new DailyLifeFragment();
-        getActivity().getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_content, dailyLifeFragment)
-                .addToBackStack()
-                .commit();
-
-        // BottomNavigationView 전환 과정
         mainActivity.getBinding().bottomNavigation.setSelectedItemId(R.id.action_home);
         // [END return to daily life fragment]
     }
@@ -113,19 +107,18 @@ public class AlarmFragment extends Fragment implements MainActivity.OnBackPresse
         private ItemCommentBinding aBinding;
 
         public AlarmRecyclerViewAdapter() {
-
             alarmDTOs = new ArrayList<>();
 
-            alarmListenerRegistration = mFirestore.collection("alarms").whereEqualTo("destinationUid", mUid)
+            alarmListenerRegistration = mFirestore.collection("alarms")
+                    .whereEqualTo("destinationUid", mUid)
                     .orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                            if (queryDocumentSnapshots == null) return;
                             alarmDTOs.clear();
+                            if (queryDocumentSnapshots == null) return;
                             for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
                                 alarmDTOs.add(snapshot.toObject(AlarmDTO.class));
                             }
-
                             notifyDataSetChanged();
                         }
                     });
@@ -153,6 +146,7 @@ public class AlarmFragment extends Fragment implements MainActivity.OnBackPresse
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             // 사진에 프로필
                             if (task.isSuccessful()) {
+                                //Object url = task.getResult().get("image");
                                 Object url = task.getResult().get("image");
                                 Glide.with(holder.itemView.getContext()).load(url)
                                         .apply(new RequestOptions().circleCrop())
@@ -169,8 +163,8 @@ public class AlarmFragment extends Fragment implements MainActivity.OnBackPresse
                     break;
                 case 1:
                     String str_1 = alarmDTOs.get(position).getUserId() +
-                            getString(R.string.alarm_who) + " \"" +
-                            alarmDTOs.get(position).getMessage() + "\" " +
+                            getString(R.string.alarm_who) +
+                            alarmDTOs.get(position).getMessage() +
                             getString(R.string.alarm_comment);
                     commentTextView.setText(str_1);
                     break;

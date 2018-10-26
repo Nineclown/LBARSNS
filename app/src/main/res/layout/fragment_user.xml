@@ -21,13 +21,18 @@
                 android:layout_alignParentStart="true"
                 tools:src="@drawable/ic_account" />
 
-            <Button
+            <TextView
                 android:id="@+id/account_btn_follow_signout"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="33dp"
                 android:layout_alignParentBottom="true"
                 android:layout_toEndOf="@+id/account_iv_profile"
-                android:text="@string/follow" />
+                android:background="@drawable/edt_rounded_signin"
+                android:gravity="center"
+                android:text="@string/follow"
+                android:textColor="@color/colorSkyBlue" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -45,6 +50,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:textSize="@dimen/small_text_size"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/post" />
@@ -65,6 +71,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:textSize="@dimen/small_text_size"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/follower" />
@@ -85,6 +92,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:textSize="@dimen/small_text_size"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/following" />
@@ -101,11 +109,18 @@
 
         </RelativeLayout>
 
+        <View
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorDeepGray" />
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/account_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-            
+
         </android.support.v7.widget.RecyclerView>
 
 

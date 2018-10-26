@@ -28,10 +28,7 @@
         <activity android:name=".AddPhotoActivity" />
         <activity
             android:name=".CommentActivity"
-            android:windowSoftInputMode="adjustPan" />
-        <activity
-            android:name=".AddActivity"
-            android:theme="@style/Theme.AppCompat" />
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- [begin: fcm 푸시 메시지 관련] -->
         <meta-data
@@ -66,15 +63,12 @@
         </activity>
         <!-- [end: facebook 로그인 관련] -->
 
+
         <!-- [begin: 이미지 크롭 관련 API -->
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
-        <activity android:name=".CropResultActivity" />
-
         <!-- [end: 이미지 크롭 관련 API -->
-        <activity android:name=".CameraCropActivity"></activity>
-
 
     </application>
 

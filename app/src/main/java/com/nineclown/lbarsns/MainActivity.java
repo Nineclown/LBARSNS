@@ -38,6 +38,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private FirebaseAuth mAuth;
     private String mUid;
 
+    private Fragment dailyLifeFragment;
+    private Fragment infoFragment;
+    private Fragment alarmFragment;
+    private Fragment userFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +53,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mUid = mAuth.getCurrentUser().getUid();
+
+        // fragment
+        dailyLifeFragment = new DailyLifeFragment();
+        infoFragment = new InfoFragment();
+        alarmFragment = new AlarmFragment();
+        userFragment = new UserFragment();
 
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
         binding.bottomNavigation.setSelectedItemId(R.id.action_home);
@@ -116,39 +127,47 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         setToolbarDefault();
         switch (item.getItemId()) {
             case R.id.action_home: {
-                Fragment dailyLifeFragment = new DailyLifeFragment();
-                getSupportFragmentManager().beginTransaction().replace(R.id.main_content, dailyLifeFragment).commit();
+                //Fragment dailyLifeFragment = new DailyLifeFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.main_content, dailyLifeFragment)
+                        .commit();
                 return true;
             }
 
             case R.id.action_search: {
 
-                Fragment infoFragment = new InfoFragment();
+                //Fragment infoFragment = new InfoFragment();
 
-                getSupportFragmentManager().beginTransaction().replace(R.id.main_content, infoFragment).commit();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.main_content, infoFragment)
+                        .commit();
                 return true;
             }
 
             case R.id.action_add_photo: {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(new Intent(this, AddActivity.class));
+                    startActivity(new Intent(this, AddPhotoActivity.class));
                 }
 
                 return true;
             }
             case R.id.action_favorite_alarm: {
-                Fragment alarmFragment = new AlarmFragment();
+                //Fragment alarmFragment = new AlarmFragment();
 
-                getSupportFragmentManager().beginTransaction().replace(R.id.main_content, alarmFragment).commit();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.main_content, alarmFragment)
+                        .commit();
                 return true;
             }
 
             case R.id.action_account: {
-                Fragment userFragment = new UserFragment();
+                //Fragment userFragment = new UserFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("destinationUid", mUid);
                 userFragment.setArguments(bundle);
-                getSupportFragmentManager().beginTransaction().replace(R.id.main_content, userFragment).commit();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.main_content, userFragment)
+                        .commit();
                 return true;
             }
         }
@@ -185,9 +204,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         else {
 
             super.onBackPressed();
-            finish();
+            //finish();
             // 이게 무슨 구문인지 안배웠는데.
-            android.os.Process.killProcess(android.os.Process.myPid());
+            //android.os.Process.killProcess(android.os.Process.myPid());
         }
 
     }

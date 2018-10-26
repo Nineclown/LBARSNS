@@ -1,6 +1,7 @@
 package com.nineclown.lbarsns;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
@@ -21,6 +22,8 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.nineclown.lbarsns.databinding.ActivityAddPhotoBinding;
 import com.nineclown.lbarsns.model.ContentDTO;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,33 +31,44 @@ import java.util.Objects;
 
 public class AddPhotoActivity extends AppCompatActivity {
 
-    private static final int PICK_IMAGE_FROM_ALBUM = 0;
+    private static final int PICK_IMAGE = 0;
+    private static final int PICK_IMAGE_FROM_ALBUM = 1;
     private ActivityAddPhotoBinding binding;
     private Uri photoUri;
     private FirebaseStorage mStorage;
     private FirebaseAuth mAuth;
     private FirebaseFirestore mFirestore;
-
+    private Activity addPhotoActivity;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_add_photo);
 
-        // 싱글톤 패턴.
+        // firebase 관련.
         mStorage = FirebaseStorage.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mFirestore = FirebaseFirestore.getInstance();
+        addPhotoActivity = this;
 
-        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+
+        /*Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         photoPickerIntent.setType("image/*");
-        startActivityForResult(photoPickerIntent, PICK_IMAGE_FROM_ALBUM);
+        startActivityForResult(photoPickerIntent, PICK_IMAGE_FROM_ALBUM);*/
+
+        CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
+                .start(this);
 
         binding.addPhotoImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                CropImage.activity()
+                        .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
+                        .start(addPhotoActivity);
+
+                /*Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                 photoPickerIntent.setType("image/*");
-                startActivityForResult(photoPickerIntent, PICK_IMAGE_FROM_ALBUM);
+                startActivityForResult(photoPickerIntent, PICK_IMAGE_FROM_ALBUM);*/
             }
         });
 
@@ -69,16 +83,19 @@ public class AddPhotoActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_FROM_ALBUM) {
-            if (resultCode == Activity.RESULT_OK) {
-                //사진 선택 할때
-                photoUri = data.getData();
+
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                photoUri = result.getUri();
                 binding.addPhotoImage.setImageURI(photoUri);
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                //뒤로가기 누를때.
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+            } else {
                 finish();
             }
         }
+
     }
 
     private void contentUpload() {

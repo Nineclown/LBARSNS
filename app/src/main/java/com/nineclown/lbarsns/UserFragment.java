@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.PorterDuff;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -102,13 +103,10 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
             else {
 
                 binding.accountBtnFollowSignout.setText(follow);
-
                 mainActivity.getBinding().toolbarBtnBack.setVisibility(View.VISIBLE);
-                ;
                 mainActivity.getBinding().toolbarUsername.setVisibility(View.VISIBLE);
                 mainActivity.getBinding().toolbarTitleImage.setVisibility(View.GONE);
                 mainActivity.getBinding().toolbarUsername.setText(getArguments().getString("userId"));
-
                 mainActivity.getBinding().toolbarBtnBack.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -125,20 +123,26 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
             }
         }
 
+        // 내 계정일 경우에만 프로필 사진을 변경시킬 수 있다.
+        if (mUid != null && mUid.equals(mCurrentUid)) {
+            binding.accountIvProfile.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                    photoPickerIntent.setType("image/*");
 
-        binding.accountIvProfile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
+                    // 프래그먼트는 결과값을 일로 받기 위해서 이렇게 하나봐. 그러면 결과는 어디서 받아? 여기서 절대 받으면 안댄다.
+                    // 얘를 갖고 있는 액티비티가 갖고 있기 때문에 MainActivity 로 가서 설정해주면 된다.
+                    getActivity().startActivityForResult(photoPickerIntent, PICK_PROFILE_FROM_ALBUM);
+                }
+            });
+        }
+        binding.accountRecyclerview.setAdapter(new UserFragmentRecyclerViewAdapter());
+        binding.accountRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
-                // 프래그먼트는 결과값을 일로 받기 위해서 이렇게 하나봐. 그러면 결과는 어디서 받아? 여기서 절대 받으면 안댄다.
-                // 얘를 갖고 있는 액티비티가 갖고 있기 때문에 MainActivity 로 가서 설정해주면 된다.
-                getActivity().startActivityForResult(photoPickerIntent, PICK_PROFILE_FROM_ALBUM);
-            }
-        });
-
-
+        getProfileImage();
+        getFollower();
+        getFollowing();
         return binding.getRoot();
     }
 
@@ -146,11 +150,11 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
     public void onResume() {
         super.onResume();
         // 화면을 다시 이쪽으로 가져올때 스냅샷도 불러온다. onCreate에 붙여놓는게 더 안정적일 수 있다.
-        getProfileImage();
+        /*getProfileImage();
         getFollower();
         getFollowing();
         binding.accountRecyclerview.setAdapter(new UserFragmentRecyclerViewAdapter());
-        binding.accountRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        binding.accountRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));*/
 
 
     }
@@ -166,6 +170,7 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
     }
 
     private void requestFollow() {
+        // collection 에 없는 이름을 작성하면 자동으로 table 이 만들어진다.
         final DocumentReference tsDocFollowing = mFirestore.collection("users").document(mCurrentUid);
 
         // 크게 내 입장, 상대 입장 2가지 트랜잭션이 발생한다.
@@ -241,7 +246,6 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
     }
 
     private void getProfileImage() {
-
         // SnapshotListener() push- driven 형식으로 동작. DB를 계속 쳐다보다가 데이터가 변화하면 그 순간 호출된다.
         imageProfileListenerRegistration = mFirestore.collection("profileImages").document(mUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -286,11 +290,15 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
 
                 if (followDTO.getFollowers().containsKey(mCurrentUid)) {
                     binding.accountBtnFollowSignout.setText(getString(R.string.follow_cancel));
+                    binding.accountBtnFollowSignout.setTypeface(null, Typeface.NORMAL);
+                    binding.accountBtnFollowSignout.setTextColor(ContextCompat.getColor(getContext(), R.color.colorSkyBlue));
                     binding.accountBtnFollowSignout.getBackground().setColorFilter(null);
                 } else {
                     if (mUid != mCurrentUid) {
                         binding.accountBtnFollowSignout.setText(getString(R.string.follow));
-                        binding.accountBtnFollowSignout.getBackground().setColorFilter(ContextCompat.getColor(getActivity(), R.color.colorSkyBlue), PorterDuff.Mode.MULTIPLY);
+                        binding.accountBtnFollowSignout.setTypeface(null, Typeface.BOLD);
+                        binding.accountBtnFollowSignout.setTextColor(ContextCompat.getColor(getContext(), R.color.colorWhite));
+                        binding.accountBtnFollowSignout.getBackground().setColorFilter(ContextCompat.getColor(getActivity(), R.color.colorDeepBlue), PorterDuff.Mode.MULTIPLY);
 
                     }
                 }
@@ -324,8 +332,18 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
 
         // [START return to daily life fragment]
         // 프래그먼트 전환 과정
-        DailyLifeFragment dailyLifeFragment = new DailyLifeFragment();
-        getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, dailyLifeFragment).commit();
+
+
+        /*mainActivity.getSupportFragmentManager().beginTransaction()
+                .remove(this).commit();
+        mainActivity.getSupportFragmentManager()
+                .popBackStack();*/
+
+        /*DailyLifeFragment dailyLifeFragment = new DailyLifeFragment();
+        mainActivity.getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, dailyLifeFragment)
+                .addToBackStack(null)
+                .commit();*/
 
         // BottomNavigationView 전환 과정
         mainActivity.getBinding().bottomNavigation.setSelectedItemId(id.action_home);
@@ -352,6 +370,7 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
             recyclerListenerRegistration = mFirestore.collection("images").whereEqualTo("uid", mUid).addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    contentDTOs.clear();
                     if (queryDocumentSnapshots == null) return;
                     //assert queryDocumentSnapshots != null;
                     for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
