@@ -47,9 +47,7 @@ public final class CropResultActivity extends Activity {
             int sampleSize = intent.getIntExtra("SAMPLE_SIZE", 1);
             double ratio = ((int) (10 * mImage.getWidth() / (double) mImage.getHeight())) / 10d;
             int byteCount = 0;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB_MR1) {
-                byteCount = mImage.getByteCount() / 1024;
-            }
+            byteCount = mImage.getByteCount() / 1024;
             String desc =
                     "("
                             + mImage.getWidth()

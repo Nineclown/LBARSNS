@@ -2,71 +2,97 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         tools:context=".AddPhotoActivity">
 
         <!-- Toolbar -->
         <android.support.v7.widget.Toolbar
             android:id="@+id/my_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="35dp">
+            android:layout_height="40dp">
 
-            <ImageView
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_margin="3dp"
-                android:contentDescription="@string/app_name"
-                android:src="@drawable/logo_title" />
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="3dp"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/logo_title" />
+
+                <TextView
+                    android:id="@+id/add_photo_btn_upload"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerInParent="true"
+                    android:text="@string/upload_image"
+                    android:textColor="@color/colorSkyBlue"
+                    android:layout_marginEnd="10dp"
+                    android:textSize="16sp" />
+
+            </RelativeLayout>
 
         </android.support.v7.widget.Toolbar>
 
-        <LinearLayout
-            android:id="@+id/toolbar_division"
+        <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_below="@id/my_toolbar"
             android:layout_marginBottom="10dp"
-            android:background="@color/colorDeepGray"
-            android:orientation="horizontal" />
+            android:background="@color/colorDeepGray" />
 
-        <!-- Contents -->
-        <ImageView
-            android:id="@+id/add_photo_image"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_alignParentStart="true"
-            android:layout_below="@id/toolbar_division"
-            android:layout_margin="8dp"
-            tools:src="@drawable/ic_account" />
-
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/edit_text"
+        <RelativeLayout
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/toolbar_division"
-            android:layout_margin="8dp"
-            android:layout_toEndOf="@id/add_photo_image">
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/add_photo_image"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerInParent="true"
+                tools:src="@drawable/ic_account" />
 
             <EditText
+                android:textSize="15sp"
                 android:id="@+id/add_photo_edit_explain"
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:gravity="top"
-                android:hint="@string/hint_image_content"
-                android:inputType="text" />
-        </android.support.design.widget.TextInputLayout>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_centerInParent="true"
+                android:layout_toEndOf="@+id/add_photo_image"
+                android:hint="@string/Write_text" />
+        </RelativeLayout>
 
-        <Button
-            android:id="@+id/add_photo_btn_upload"
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/edit_text"
-            android:layout_margin="8dp"
-            android:layout_toEndOf="@id/add_photo_image"
-            android:text="@string/upload_image"
-            android:theme="@style/ButtonStyle" />
+            android:layout_height="1dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="20dp"
+            android:background="@color/colorLightGray" />
 
-    </RelativeLayout>
+        <TextView
+            android:textStyle="bold"
+            android:layout_margin="10dp"
+            android:id="@+id/tv_add_gps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_gps" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/tv_add_gps"
+            android:layout_marginBottom="20dp"
+            android:background="@color/colorLightGray" />
+
+
+    </LinearLayout>
 </layout>

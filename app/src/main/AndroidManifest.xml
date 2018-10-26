@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -27,11 +28,10 @@
         <activity android:name=".AddPhotoActivity" />
         <activity
             android:name=".CommentActivity"
-            android:windowSoftInputMode="adjustPan"></activity>
-
-        <activity android:name=".AddActivity">
-
-        </activity>
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".AddActivity"
+            android:theme="@style/Theme.AppCompat" />
 
         <!-- [begin: fcm 푸시 메시지 관련] -->
         <meta-data
@@ -67,13 +67,16 @@
         <!-- [end: facebook 로그인 관련] -->
 
 
-        <!-- [begin: 이미지 크롭 관련 API-->
+        <!-- [begin: 이미지 크롭 관련 API -->
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
         <activity android:name=".CropResultActivity" />
 
-        <!-- [end: 이미지 크롭 관련 API-->
+        <!-- [end: 이미지 크롭 관련 API -->
+        <activity android:name=".CameraCropActivity"></activity>
+
+
     </application>
 
 </manifest>

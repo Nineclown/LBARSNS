@@ -73,6 +73,10 @@ public class AddPhotoActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 //사진 선택 할때
                 photoUri = data.getData();
+
+
+
+
                 binding.addPhotoImage.setImageURI(photoUri);
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 //뒤로가기 누를때.

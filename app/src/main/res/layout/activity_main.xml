@@ -11,7 +11,7 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/my_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="35dp"
+            android:layout_height="40dp"
             android:layout_alignParentTop="true">
 
             <RelativeLayout
@@ -19,7 +19,6 @@
                 android:layout_height="match_parent">
 
                 <ImageView
-
                     android:id="@+id/toolbar_btn_back"
                     android:layout_width="35dp"
                     android:layout_height="35dp"

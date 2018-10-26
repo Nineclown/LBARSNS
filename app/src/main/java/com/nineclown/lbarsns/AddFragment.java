@@ -12,7 +12,7 @@
 
 package com.nineclown.lbarsns;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -163,24 +163,16 @@ public final class AddFragment extends Fragment
         if (item.getItemId() == R.id.add_action_crop) {
             mCropImageView.getCroppedImageAsync();
             return true;
-        } else if (item.getItemId() == R.id.add_action_rotate) {
-            mCropImageView.rotateImage(90);
-            return true;
-        } else if (item.getItemId() == R.id.add_action_flip_horizontally) {
-            mCropImageView.flipImageHorizontally();
-            return true;
-        } else if (item.getItemId() == R.id.add_action_flip_vertically) {
-            mCropImageView.flipImageVertically();
-            return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         mDemoPreset = CropDemoPreset.valueOf(getArguments().getString("DEMO_PRESET"));
-        ((AddActivity) activity).setCurrentFragment(this);
+        ((AddActivity) context).setCurrentFragment(this);
     }
 
     @Override

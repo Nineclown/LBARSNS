@@ -4,10 +4,10 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Pair;
@@ -18,14 +18,14 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nineclown.lbarsns.databinding.ActivityAddBinding;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 public class AddActivity extends AppCompatActivity {
 
+    private ActivityAddBinding binding;
     // region: Fields and Consts
-
-    DrawerLayout mDrawerLayout;
 
     private ActionBarDrawerToggle mDrawerToggle;
 
@@ -48,18 +48,17 @@ public class AddActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_add);
 
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //getSupportActionBar().setHomeButtonEnabled(true);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         mDrawerToggle =
                 new ActionBarDrawerToggle(
-                        this, mDrawerLayout, R.string.add_drawer_open, R.string.add_drawer_close);
+                        this, binding.drawerLayout, R.string.add_drawer_open, R.string.add_drawer_close);
         mDrawerToggle.setDrawerIndicatorEnabled(true);
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        binding.drawerLayout.addDrawerListener(mDrawerToggle);
 
         if (savedInstanceState == null) {
             setAddFragmentByPreset(CropDemoPreset.RECT);
@@ -80,6 +79,8 @@ public class AddActivity extends AppCompatActivity {
         return true;
     }
 
+
+    // 액션바 눌렀을 때, item: 다음 이 들어있음.
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
@@ -91,6 +92,8 @@ public class AddActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    // 이미지를 골랐을 때,
     @Override
     @SuppressLint("NewApi")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -154,27 +157,27 @@ public class AddActivity extends AppCompatActivity {
                 } else {
                     CropImage.startPickImageActivity(this);
                 }
-                mDrawerLayout.closeDrawers();
+                binding.drawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_oval:
                 setAddFragmentByPreset(CropDemoPreset.CIRCULAR);
-                mDrawerLayout.closeDrawers();
+                binding.drawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_rect:
                 setAddFragmentByPreset(CropDemoPreset.RECT);
-                mDrawerLayout.closeDrawers();
+                binding.drawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_customized_overlay:
                 setAddFragmentByPreset(CropDemoPreset.CUSTOMIZED_OVERLAY);
-                mDrawerLayout.closeDrawers();
+                binding.drawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_min_max_override:
                 setAddFragmentByPreset(CropDemoPreset.MIN_MAX_OVERRIDE);
-                mDrawerLayout.closeDrawers();
+                binding.drawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_scale_center:
                 setAddFragmentByPreset(CropDemoPreset.SCALE_CENTER_INSIDE);
-                mDrawerLayout.closeDrawers();
+                binding.drawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_toggle_scale:
                 mCropImageViewOptions.scaleType =
@@ -242,11 +245,11 @@ public class AddActivity extends AppCompatActivity {
                 break;
             case R.id.drawer_option_set_initial_crop_rect:
                 mCurrentFragment.setInitialCropRect();
-                mDrawerLayout.closeDrawers();
+                binding.drawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_reset_crop_rect:
                 mCurrentFragment.resetCropRect();
-                mDrawerLayout.closeDrawers();
+                binding.drawerLayout.closeDrawers();
                 break;
             case R.id.drawer_option_toggle_multitouch:
                 mCropImageViewOptions.multitouch = !mCropImageViewOptions.multitouch;

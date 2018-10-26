@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             case R.id.action_add_photo: {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(new Intent(this, AddActivity.class));
+                    startActivity(new Intent(this, CameraCropActivity.class));
                 }
 
                 return true;

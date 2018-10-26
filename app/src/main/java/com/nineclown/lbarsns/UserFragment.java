@@ -77,6 +77,8 @@ public class UserFragment extends Fragment {
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mCurrentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // userfragment 에서 mainActivity 값을 갖고 조작하기 위해 가져옴.
         mainActivity = (MainActivity) getActivity();
 
         // 프로필을 눌렀을 때,
