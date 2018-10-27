@@ -1,4 +1,4 @@
-package com.nineclown.lbarsns;
+package com.nineclown.lbarsns.sns;
 
 
 import android.content.Intent;
@@ -27,6 +27,9 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
+import com.nineclown.lbarsns.service.FcmPush;
+import com.nineclown.lbarsns.R;
+import com.nineclown.lbarsns.camera.CameraActivity;
 import com.nineclown.lbarsns.databinding.FragmentDailyLifeBinding;
 import com.nineclown.lbarsns.databinding.ItemDailyBinding;
 import com.nineclown.lbarsns.model.AlarmDTO;
@@ -37,7 +40,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DailyLifeFragment extends Fragment {
-
     private FragmentDailyLifeBinding binding;
     private FcmPush fcmPush;
     private FirebaseFirestore mFirestore;
@@ -45,6 +47,7 @@ public class DailyLifeFragment extends Fragment {
     private String mUid;
     private ListenerRegistration imageListenerRegistration;
     private boolean alone;
+    private MainActivity mainActivity;
 
     public DailyLifeFragment() {
         // Required empty public constructor
@@ -62,6 +65,19 @@ public class DailyLifeFragment extends Fragment {
         mUid = mAuth.getCurrentUser().getUid();
         fcmPush = FcmPush.getInstance();
         alone = true;
+        mainActivity = (MainActivity) getActivity();
+
+        mainActivity.getBinding().toolbarBtnAr.setVisibility(View.VISIBLE);
+        mainActivity.getBinding().toolbarBtnAr.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), CameraActivity.class);
+
+                // 프래그먼트는 결과값을 일로 받기 위해서 이렇게 하나봐. 그러면 결과는 어디서 받아? 여기서 절대 받으면 안댄다.
+                // 얘를 갖고 있는 액티비티가 갖고 있기 때문에 MainActivity 로 가서 설정해주면 된다.
+                getActivity().startActivity(intent);
+            }
+        });
 
         binding.dailylifefragmentRecyclerview.setAdapter(new DailyLifeRecyclerViewAdapter());
         binding.dailylifefragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));

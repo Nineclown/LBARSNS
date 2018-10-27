@@ -1,4 +1,4 @@
-package com.nineclown.lbarsns;
+package com.nineclown.lbarsns.sns;
 
 import android.Manifest;
 import android.app.Activity;
@@ -25,6 +25,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.ActivityMainBinding;
 
 import java.util.HashMap;
@@ -62,8 +63,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
         binding.bottomNavigation.setSelectedItemId(R.id.action_home);
+        // 앨범 접근 권한 요청
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+
+        // 푸시토큰 서버 등록
         registerPushToken();
+
     }
 
     private void registerPushToken() {
@@ -144,9 +149,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 return true;
             }
 
-            case R.id.action_add_photo: {
+            case R.id.action_upload: {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(new Intent(this, AddPhotoActivity.class));
+                    startActivity(new Intent(this, UploadActivity.class));
                 }
 
                 return true;
@@ -181,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     private void setToolbarDefault() {
         binding.toolbarBtnBack.setVisibility(View.GONE);
+        binding.toolbarBtnAr.setVisibility(View.GONE);
         binding.toolbarUsername.setVisibility(View.GONE);
         binding.toolbarTitleImage.setVisibility(View.VISIBLE);
     }

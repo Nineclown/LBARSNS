@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".LoginActivity"
+            android:name=".sns.LoginActivity"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,10 +24,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity" />
-        <activity android:name=".AddPhotoActivity" />
+        <activity android:name=".sns.MainActivity" />
+        <activity android:name=".sns.UploadActivity" />
         <activity
-            android:name=".CommentActivity"
+            android:name=".sns.CommentActivity"
             android:windowSoftInputMode="adjustResize" />
 
         <!-- [begin: fcm 푸시 메시지 관련] -->
@@ -70,6 +70,20 @@
             android:theme="@style/Base.Theme.AppCompat" />
         <!-- [end: 이미지 크롭 관련 API -->
 
+        <activity android:name=".GPSTracker" />
+
+        <service
+            android:name=".service.GPSService"
+            android:enabled="false"
+            android:exported="false" />
+
+        <activity android:name=".camera.CameraActivity" />
+        <activity android:name=".camera.ArActivity"></activity>
+
+        <!-- AR core 관련 -->
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="required" />
     </application>
 
 </manifest>

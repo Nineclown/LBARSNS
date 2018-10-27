@@ -13,7 +13,7 @@
         android:title="@string/surround"/>
 
     <item
-        android:id="@+id/action_add_photo"
+        android:id="@+id/action_upload"
         android:enabled="true"
         android:icon="@drawable/ic_add_a_photo"
         android:title="@string/upload"/>

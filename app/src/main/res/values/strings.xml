@@ -59,6 +59,12 @@
     <string name="select_image_text">다른 사진을 고르시겠어요?</string>
     <string name="select_image_btn">다른 사진 선택</string>
 
+    <!-- Camera -->
+    <string name="picture">Picture</string>
+    <string name="description_info">Info</string>
+    <string name="request_permission">This sample needs camera permission.</string>
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+    <string name="AR_Mode">AR Mode</string>
 
     <!-- Toolbar -->
     <string name="back">Back</string>
@@ -66,7 +72,10 @@
     <!-- etc -->
     <item name="visible" type="id" />
     <item name="masked" type="id" />
+    <string name="tracking_enabled_notif">Tracking is currently enabled. Tap to cancel.</string>
+
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

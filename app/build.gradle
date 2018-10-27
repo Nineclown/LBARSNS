@@ -19,6 +19,10 @@ android {
     dataBinding {
         enabled = true
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
@@ -26,8 +30,14 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.1.1'
     // image crop
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.0'
-    implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
+    //implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
 
+    // sceneform
+    implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.5.1'
+
+
+    // gps
+    implementation 'com.google.android.gms:play-services-location:16.0.0'
     // Material Design
     implementation 'com.android.support:design:27.1.1'
     // 파이러베이스 코어
@@ -53,4 +63,5 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 }
 
+apply plugin: 'com.google.ar.sceneform.plugin'
 apply plugin: 'com.google.gms.google-services'

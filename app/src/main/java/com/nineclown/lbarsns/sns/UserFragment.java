@@ -1,4 +1,4 @@
-package com.nineclown.lbarsns;
+package com.nineclown.lbarsns.sns;
 
 
 import android.content.Context;
@@ -30,6 +30,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
+import com.nineclown.lbarsns.service.FcmPush;
+import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.FragmentUserBinding;
 import com.nineclown.lbarsns.model.AlarmDTO;
 import com.nineclown.lbarsns.model.ContentDTO;

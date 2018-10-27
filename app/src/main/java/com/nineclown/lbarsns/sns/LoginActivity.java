@@ -1,4 +1,4 @@
-package com.nineclown.lbarsns;
+package com.nineclown.lbarsns.sns;
 
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
@@ -30,6 +30,7 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.ActivityLoginBinding;
 
 import java.util.Arrays;

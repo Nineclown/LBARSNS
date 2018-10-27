@@ -9,7 +9,7 @@
         android:layout_height="match_parent"
         android:background="@color/colorWhite"
         android:gravity="center"
-        tools:context=".LoginActivity"
+        tools:context=".sns.LoginActivity"
         >
 
         <LinearLayout

@@ -1,4 +1,4 @@
-package com.nineclown.lbarsns;
+package com.nineclown.lbarsns.sns;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,7 +19,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.nineclown.lbarsns.databinding.ActivityAddPhotoBinding;
+import com.nineclown.lbarsns.R;
+import com.nineclown.lbarsns.databinding.ActivityUploadBinding;
 import com.nineclown.lbarsns.model.ContentDTO;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -28,20 +29,21 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
-public class AddPhotoActivity extends AppCompatActivity {
+public class UploadActivity extends AppCompatActivity {
 
     private static final int PICK_IMAGE = 0;
     private static final int PICK_IMAGE_FROM_ALBUM = 1;
-    private ActivityAddPhotoBinding binding;
+    private ActivityUploadBinding binding;
     private Uri photoUri;
     private FirebaseStorage mStorage;
     private FirebaseAuth mAuth;
     private FirebaseFirestore mFirestore;
     private Activity addPhotoActivity;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_add_photo);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_upload);
 
         // firebase 관련.
         mStorage = FirebaseStorage.getInstance();
@@ -119,7 +121,7 @@ public class AddPhotoActivity extends AppCompatActivity {
         }).addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
-                Toast.makeText(AddPhotoActivity.this, "등록 완료.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(UploadActivity.this, "등록 완료.", Toast.LENGTH_SHORT).show();
                 if (uri != null) {
                     // 업로드된 이미지 주소
                     String photoStringLink = uri.toString(); //YOU WILL GET THE DOWNLOAD URL HERE !!!!
@@ -161,7 +163,7 @@ public class AddPhotoActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     Uri downloadUri = task.getResult();
                     System.out.println("Upload " + downloadUri);
-                    Toast.makeText(AddPhotoActivity.this, "Successfully uploaded", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(UploadActivity.this, "Successfully uploaded", Toast.LENGTH_SHORT).show();
                     if (downloadUri != null) {
 
                         String photoStringLink = downloadUri.toString(); //YOU WILL GET THE DOWNLOAD URL HERE !!!!

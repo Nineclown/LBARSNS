@@ -1,4 +1,4 @@
-package com.nineclown.lbarsns;
+package com.nineclown.lbarsns.service;
 
 import android.support.annotation.NonNull;
 
