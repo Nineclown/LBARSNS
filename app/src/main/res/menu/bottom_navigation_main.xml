@@ -10,13 +10,13 @@
         android:id="@+id/action_search"
         android:enabled="true"
         android:icon="@drawable/ic_search"
-        android:title="@string/search"/>
+        android:title="@string/surround"/>
 
     <item
         android:id="@+id/action_add_photo"
         android:enabled="true"
         android:icon="@drawable/ic_add_a_photo"
-        android:title="@string/gallery"/>
+        android:title="@string/upload"/>
 
     <item
         android:id="@+id/action_favorite_alarm"

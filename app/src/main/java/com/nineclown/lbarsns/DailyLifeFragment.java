@@ -193,25 +193,25 @@ public class DailyLifeFragment extends Fragment {
                                 Object url = task.getResult().get("image");
                                 Glide.with(holder.itemView.getContext()).load(url)
                                         .apply(new RequestOptions().circleCrop())
-                                        .into(viewHolder.hBinding.dailyviewitemImageviewProfile);
+                                        .into(viewHolder.hBinding.dailyviewitemIvProfile);
                             }
                         }
                     });
             // 유저 아이디
-            viewHolder.hBinding.dailyviewitemTextviewProfile.setText(contentDTOs.get(position).getUserId());
+            viewHolder.hBinding.dailyviewitemTvProfile.setText(contentDTOs.get(position).getUserId());
             //iBinding.detailviewitemProfileTextview.setText(contentDTOs.get(position).getUserId()); 이렇게 하면 뷰홀더를 안거쳐서 안되는 건가??
 
             // 이미지.  콜백 방식. 이미지를 ~~한 다음에 마지막에 into()로 결과 값을 받아서 뷰에 집어넣는대. 스레드?
             Glide.with(holder.itemView.getContext())
                     .load(contentDTOs.get(position).getImageUrl())
-                    .into(viewHolder.hBinding.dailyviewitemImageviewContent);
+                    .into(viewHolder.hBinding.dailyviewitemIvContent);
 
             // 설명 텍스트
-            viewHolder.hBinding.dailyviewitemTextviewExplain.setText(contentDTOs.get(position).getExplain());
+            viewHolder.hBinding.dailyviewitemTvExplain.setText(contentDTOs.get(position).getExplain());
 
             // 좋아요 카운터 설정
             String memo = "좋아요 " + contentDTOs.get(position).getFavoriteCount() + "개";
-            viewHolder.hBinding.dailyviewitemTextviewFavoritecounter.setText(memo);
+            viewHolder.hBinding.dailyviewitemTvFavoritecounter.setText(memo);
             viewHolder.hBinding.dailyviewitemImageviewFavorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -229,7 +229,7 @@ public class DailyLifeFragment extends Fragment {
             }
 
             // 게시 글의 프로필 클릭. (프래그먼트 이동)
-            viewHolder.hBinding.dailyviewitemImageviewProfile.setOnClickListener(new View.OnClickListener() {
+            viewHolder.hBinding.dailyviewitemIvProfile.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Fragment fragment = new UserFragment();

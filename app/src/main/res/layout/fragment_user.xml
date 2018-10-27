@@ -26,7 +26,7 @@
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
                 android:layout_width="match_parent"
-                android:layout_height="33dp"
+                android:layout_height="30dp"
                 android:layout_alignParentBottom="true"
                 android:layout_toEndOf="@+id/account_iv_profile"
                 android:background="@drawable/edt_rounded_signin"
@@ -56,6 +56,8 @@
                         android:text="@string/post" />
 
                     <TextView
+                        android:textColor="@color/colorBlack"
+                        android:textStyle="bold"
                         android:id="@+id/account_tv_post_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -77,6 +79,8 @@
                         android:text="@string/follower" />
 
                     <TextView
+                        android:textStyle="bold"
+                        android:textColor="@color/colorBlack"
                         android:id="@+id/account_tv_follower_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -98,6 +102,8 @@
                         android:text="@string/following" />
 
                     <TextView
+                        android:textStyle="bold"
+                        android:textColor="@color/colorBlack"
                         android:id="@+id/account_tv_following_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

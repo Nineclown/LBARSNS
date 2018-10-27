@@ -23,10 +23,10 @@
 
     <!-- Bottom Navigation View -->
     <string name="home">home</string>
-    <string name="search">Search</string>
-    <string name="gallery">Gallery</string>
-    <string name="favorite">Favorite</string>
-    <string name="account">Account</string>
+    <string name="surround">surround</string>
+    <string name="upload">upload</string>
+    <string name="favorite">favorite</string>
+    <string name="account">account</string>
 
     <!-- Account -->
     <string name="post">게시물</string>

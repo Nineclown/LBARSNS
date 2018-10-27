@@ -1,7 +1,6 @@
 package com.nineclown.lbarsns;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
@@ -59,7 +58,7 @@ public class AddPhotoActivity extends AppCompatActivity {
                 .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
                 .start(this);
 
-        binding.addPhotoImage.setOnClickListener(new View.OnClickListener() {
+        binding.uploadIvPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 CropImage.activity()
@@ -88,7 +87,7 @@ public class AddPhotoActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 photoUri = result.getUri();
-                binding.addPhotoImage.setImageURI(photoUri);
+                binding.uploadIvPhoto.setImageURI(photoUri);
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             } else {
@@ -134,7 +133,7 @@ public class AddPhotoActivity extends AppCompatActivity {
                     contentDTO.setUid(mAuth.getCurrentUser().getUid());
 
                     // 게시물 설명
-                    contentDTO.setExplain(binding.addPhotoEditExplain.getText().toString());
+                    contentDTO.setExplain(binding.uploadEtExplain.getText().toString());
 
                     // 유저 ID
                     contentDTO.setUserId(mAuth.getCurrentUser().getEmail());
