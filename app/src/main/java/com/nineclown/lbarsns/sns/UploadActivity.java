@@ -51,14 +51,9 @@ public class UploadActivity extends AppCompatActivity {
         mFirestore = FirebaseFirestore.getInstance();
         addPhotoActivity = this;
 
-
-        /*Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-        photoPickerIntent.setType("image/*");
-        startActivityForResult(photoPickerIntent, PICK_IMAGE_FROM_ALBUM);*/
-
-        CropImage.activity()
+        /*CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
-                .start(this);
+                .start(this);*/
 
         binding.uploadIvPhoto.setOnClickListener(new View.OnClickListener() {
             @Override

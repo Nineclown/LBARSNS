@@ -1,19 +1,3 @@
-/*
- * Copyright 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.nineclown.lbarsns.camera;
 
 import android.Manifest;
@@ -44,7 +28,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.ExifInterface;
+import android.support.media.ExifInterface;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaRecorder;
@@ -93,67 +77,24 @@ import static android.content.Context.LOCATION_SERVICE;
 public class CameraFragment extends Fragment
         implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback, View.OnTouchListener, LocationListener {
 
-    /**
-     * Conversion from screen rotation to JPEG orientation.
-     */
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     private static final String FRAGMENT_DIALOG = "dialog";
 
-    static {
-        ORIENTATIONS.append(Surface.ROTATION_0, 90);
-        ORIENTATIONS.append(Surface.ROTATION_90, 0);
-        ORIENTATIONS.append(Surface.ROTATION_180, 270);
-        ORIENTATIONS.append(Surface.ROTATION_270, 180);
-    }
+    private static final String TAG = "CameraFragment";
 
-    /**
-     * Tag for the {@link Log}.
-     */
-    private static final String TAG = "Camera2BasicFragment";
-
-    /**
-     * Camera state: Showing camera preview.
-     */
     private static final int STATE_PREVIEW = 0;
-
-    /**
-     * Camera state: Waiting for the focus to be locked.
-     */
     private static final int STATE_WAITING_LOCK = 1;
-
-    /**
-     * Camera state: Waiting for the exposure to be precapture state.
-     */
     private static final int STATE_WAITING_PRECAPTURE = 2;
-
-    /**
-     * Camera state: Waiting for the exposure state to be something other than precapture.
-     */
     private static final int STATE_WAITING_NON_PRECAPTURE = 3;
-
-    /**
-     * Camera state: Picture was taken.
-     */
     private static final int STATE_PICTURE_TAKEN = 4;
-
-    /**
-     * Max preview width that is guaranteed by Camera2 API
-     */
     private static final int MAX_PREVIEW_WIDTH = 1920;
-
-    /**
-     * Max preview height that is guaranteed by Camera2 API
-     */
     private static final int MAX_PREVIEW_HEIGHT = 1080;
 
     public float finger_spacing = 0;
     public int zoom_level = 1;
     public Rect zoom;
-    /**
-     * {@link TextureView.SurfaceTextureListener} handles several lifecycle events on a
-     * {@link TextureView}.
-     */
+
     private final TextureView.SurfaceTextureListener mSurfaceTextureListener
             = new TextureView.SurfaceTextureListener() {
 
@@ -178,38 +119,20 @@ public class CameraFragment extends Fragment
 
     };
 
-    /**
-     * ID of the current {@link CameraDevice}.
-     */
     private String mCameraId;
 
-    /**
-     * An {@link AutoFitTextureView} for camera preview.
-     */
     private AutoFitTextureView mTextureView;
 
-    /**
-     * A {@link CameraCaptureSession } for camera preview.
-     */
     private CameraCaptureSession mCaptureSession;
 
-    /**
-     * A reference to the opened {@link CameraDevice}.
-     */
     private CameraDevice mCameraDevice;
 
-    /**
-     * The {@link android.util.Size} of camera preview.
-     */
     private Size mPreviewSize;
 
     public static Size[] previewSizes;
     public static Size[] videoSizes;
     public static Size[] pictureSizes;
 
-    /**
-     * {@link CameraDevice.StateCallback} is called when {@link CameraDevice} changes its state.
-     */
     private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
 
         @Override
@@ -240,31 +163,16 @@ public class CameraFragment extends Fragment
 
     };
 
-    /**
-     * An additional thread for running tasks that shouldn't block the UI.
-     */
+
     private HandlerThread mBackgroundThread;
 
-    /**
-     * A {@link Handler} for running tasks in the background.
-     */
     private Handler mBackgroundHandler;
 
-    /**
-     * An {@link ImageReader} that handles still image capture.
-     */
     private ImageReader mImageReader;
 
-    /**
-     * This is the output file for our picture.
-     */
     private File mFile;
     private File m_file;
 
-    /**
-     * This a callback object for the {@link ImageReader}. "onImageAvailable" will be called when a
-     * still image is ready to be saved.
-     */
     private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
             = new ImageReader.OnImageAvailableListener() {
 
@@ -278,47 +186,17 @@ public class CameraFragment extends Fragment
 
     public static final String CAMERA_FRONT = "1";
     public static final String CAMERA_BACK = "0";
-
     private String cameraId = CAMERA_BACK;
     private boolean isTorchOn;
-
     private Switch modeSwitch;
 
-    /**
-     * {@link CaptureRequest.Builder} for the camera preview
-     */
     private CaptureRequest.Builder mPreviewRequestBuilder;
-
-    /**
-     * {@link CaptureRequest} generated by {@link #mPreviewRequestBuilder}
-     */
     private CaptureRequest mPreviewRequest;
 
-    /**
-     * The current state of camera state for taking pictures.
-     *
-     * @see #mCaptureCallback
-     */
     private int mState = STATE_PREVIEW;
-
-    /**
-     * A {@link Semaphore} to prevent the app from exiting before closing the camera.
-     */
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
-
-    /**
-     * Whether the current camera device supports Flash or not.
-     */
     private boolean mFlashSupported;
-
-    /**
-     * Orientation of the camera sensor
-     */
     private int mSensorOrientation;
-
-    /**
-     * A {@link CameraCaptureSession.CaptureCallback} that handles events related to JPEG capture.
-     */
     private CameraCaptureSession.CaptureCallback mCaptureCallback
             = new CameraCaptureSession.CaptureCallback() {
 
@@ -404,12 +282,6 @@ public class CameraFragment extends Fragment
 
     protected LocationManager locationManager;
 
-
-    /**
-     * Shows a {@link Toast} on the UI thread.
-     *
-     * @param text The message to show
-     */
     private void showToast(final String text) {
         final Activity activity = getActivity();
         if (activity != null) {

@@ -36,6 +36,8 @@ import com.nineclown.lbarsns.databinding.FragmentUserBinding;
 import com.nineclown.lbarsns.model.AlarmDTO;
 import com.nineclown.lbarsns.model.ContentDTO;
 import com.nineclown.lbarsns.model.FollowDTO;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.util.ArrayList;
 
@@ -92,18 +94,15 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
             // 내 프로필을 눌렀을 때, (dailyLife 탭에서)
             if (mUid != null && mUid.equals(mCurrentUid)) {
                 binding.accountBtnFollowSignout.setText(signout);
-                binding.accountBtnFollowSignout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        getActivity().finish();
-                        startActivity(new Intent(getActivity(), LoginActivity.class));
-                        mAuth.signOut();
-                    }
+                binding.accountBtnFollowSignout.setOnClickListener(v -> {
+                    // 여기 방금 수정함. getActivity가 아니라 이미 가져온 mainActivity으로 바꿈
+                    startActivity(new Intent(mainActivity, LoginActivity.class));
+                    mainActivity.finish();
+                    mAuth.signOut();
                 });
             }
             // 상대방 프로필을 눌렀을 때,
             else {
-
                 binding.accountBtnFollowSignout.setText(follow);
                 mainActivity.getBinding().toolbarBtnBack.setVisibility(View.VISIBLE);
                 mainActivity.getBinding().toolbarUsername.setVisibility(View.VISIBLE);
@@ -130,12 +129,16 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
             binding.accountIvProfile.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                    CropImage.activity()
+                            .setCropShape(CropImageView.CropShape.OVAL)
+                            .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
+                            .start(mainActivity, new UserFragment());
+                    /*Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                     photoPickerIntent.setType("image/*");
 
                     // 프래그먼트는 결과값을 일로 받기 위해서 이렇게 하나봐. 그러면 결과는 어디서 받아? 여기서 절대 받으면 안댄다.
                     // 얘를 갖고 있는 액티비티가 갖고 있기 때문에 MainActivity 로 가서 설정해주면 된다.
-                    getActivity().startActivityForResult(photoPickerIntent, PICK_PROFILE_FROM_ALBUM);
+                    getActivity().startActivityForResult(photoPickerIntent, PICK_PROFILE_FROM_ALBUM);*/
                 }
             });
         }
