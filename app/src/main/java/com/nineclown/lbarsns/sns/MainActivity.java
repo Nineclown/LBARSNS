@@ -53,12 +53,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         mAuth = FirebaseAuth.getInstance();
         mUid = mAuth.getCurrentUser().getUid();
 
-       /* // fragment
-        dailyLifeFragment = new DailyLifeFragment();
-        infoFragment = new InfoFragment();
-        alarmFragment = new AlarmFragment();
-        userFragment = new UserFragment();*/
-
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
         binding.bottomNavigation.setSelectedItemId(R.id.action_home);
         // 앨범 접근 권한 요청

@@ -69,14 +69,11 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import static com.facebook.FacebookSdk.getApplicationContext;
+import static android.content.Context.BIND_AUTO_CREATE;
 
 public class CameraFragment extends Fragment
         implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback, View.OnTouchListener {
 
-    /**
-     * Conversion from screen rotation to JPEG orientation.
-     */
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     private static final String FRAGMENT_DIALOG = "dialog";
@@ -199,7 +196,6 @@ public class CameraFragment extends Fragment
         private void process(CaptureResult result) {
             switch (mState) {
                 case STATE_PREVIEW: {
-                    // We have nothing to do when the camera preview is working normally.
                     break;
                 }
                 case STATE_WAITING_LOCK: {
@@ -276,9 +272,6 @@ public class CameraFragment extends Fragment
         int w = aspectRatio.getWidth();
         int h = aspectRatio.getHeight();
         for (Size option : choices) {
-            Log.d("option.x", ":" + option.getWidth());
-            Log.d("option.y", ":" + option.getHeight());
-            Log.d("--------", "------------------");
             if (option.getWidth() <= maxWidth && option.getHeight() <= maxHeight &&
                     option.getHeight() == option.getWidth() * h / w) {
                 if (option.getWidth() >= textureViewWidth &&
@@ -307,14 +300,15 @@ public class CameraFragment extends Fragment
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         return inflater.inflate(R.layout.fragment_camera, container, false);
     }
 
 
     @Override
-    public void onViewCreated(final View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull final View view, Bundle savedInstanceState) {
 
         view.findViewById(R.id.picture).setOnClickListener(this);
         view.findViewById(R.id.texture).setOnTouchListener(this);
@@ -322,7 +316,6 @@ public class CameraFragment extends Fragment
         //BusProvider.getInstance().register(this);
         modeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                Log.d("test", ":true");
                 Intent intent1 = new Intent(getActivity(), ArActivity.class);
                 startActivity(intent1);
                 getActivity().overridePendingTransition(0, 0);
@@ -350,7 +343,6 @@ public class CameraFragment extends Fragment
         } else {
             m_file = Environment.getExternalStorageDirectory();
         }
-
 
         m_file = new File(Environment.getExternalStorageDirectory(), "/Pictures/Lbarsns");
         if (!m_file.exists()) {
@@ -444,8 +436,6 @@ public class CameraFragment extends Fragment
                         ImageFormat.JPEG, /*maxImages*/2);
                 mImageReader.setOnImageAvailableListener(
                         mOnImageAvailableListener, mBackgroundHandler);
-                Log.d("mImageReader.x", ":" + mImageReader.getWidth());
-                Log.d("mImageReader.y", ":" + mImageReader.getHeight());
                 // Find out if we need to swap dimension to get the preview size relative to sensor
                 // coordinate.
                 int displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
@@ -490,18 +480,10 @@ public class CameraFragment extends Fragment
                     maxPreviewHeight = MAX_PREVIEW_HEIGHT;
                 }
 
-                // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
-                // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
-                // garbage capture data.
                 mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class),
                         rotatedPreviewWidth, rotatedPreviewHeight, maxPreviewWidth,
                         maxPreviewHeight, largest);
 
-//                mPreviewSize = new Size(height,width);
-                Log.d("mPreviewSize.x", ":" + mPreviewSize.getWidth());
-                Log.d("mPreviewSize.y", ":" + mPreviewSize.getHeight());
-
-                // We fit the aspect ratio of TextureView to the size of preview we picked.
                 int orientation = getResources().getConfiguration().orientation;
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     mTextureView.setAspectRatio(
@@ -511,7 +493,6 @@ public class CameraFragment extends Fragment
                             mPreviewSize.getHeight(), mPreviewSize.getWidth());
                 }
 
-                // Check if the flash is supported.
                 Boolean available = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
                 mFlashSupported = available == null ? false : available;
 
@@ -528,9 +509,6 @@ public class CameraFragment extends Fragment
         }
     }
 
-    /**
-     * Opens the camera specified by {@link CameraFragment#mCameraId}.
-     */
     private void openCamera(int width, int height) {
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -553,9 +531,6 @@ public class CameraFragment extends Fragment
         }
     }
 
-    /**
-     * Closes the current {@link CameraDevice}.
-     */
     private void closeCamera() {
         try {
             mCameraOpenCloseLock.acquire();
@@ -578,18 +553,12 @@ public class CameraFragment extends Fragment
         }
     }
 
-    /**
-     * Starts a background thread and its {@link Handler}.
-     */
     private void startBackgroundThread() {
         mBackgroundThread = new HandlerThread("CameraBackground");
         mBackgroundThread.start();
         mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
     }
 
-    /**
-     * Stops the background thread and its {@link Handler}.
-     */
     private void stopBackgroundThread() {
         mBackgroundThread.quitSafely();
         try {
@@ -601,9 +570,6 @@ public class CameraFragment extends Fragment
         }
     }
 
-    /**
-     * Creates a new {@link CameraCaptureSession} for camera preview.
-     */
     private void createCameraPreviewSession() {
         try {
             SurfaceTexture texture = mTextureView.getSurfaceTexture();
@@ -611,10 +577,6 @@ public class CameraFragment extends Fragment
 
             // We configure the size of default buffer to be the size of camera preview we want.
             texture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
-            Log.d("mTextureView.x", ":" + mTextureView.getWidth());
-            Log.d("mTextureView.y", ":" + mTextureView.getHeight());
-            Log.d("mPreviewSize.x", ":" + mPreviewSize.getWidth());
-            Log.d("mPreviewSize.y", ":" + mPreviewSize.getHeight());
 
             // This is the output Surface we need to start preview.
             Surface surface = new Surface(texture);
@@ -665,14 +627,6 @@ public class CameraFragment extends Fragment
         }
     }
 
-    /**
-     * Configures the necessary {@link android.graphics.Matrix} transformation to `mTextureView`.
-     * This method should be called after the camera preview size is determined in
-     * setUpCameraOutputs and also the size of `mTextureView` is fixed.
-     *
-     * @param viewWidth  The width of `mTextureView`
-     * @param viewHeight The height of `mTextureView`
-     */
     private void configureTransform(int viewWidth, int viewHeight) {
         Activity activity = getActivity();
         if (null == mTextureView || null == mPreviewSize || null == activity) {
@@ -683,7 +637,6 @@ public class CameraFragment extends Fragment
         activity.getWindowManager().getDefaultDisplay().getRealSize(point);
         Matrix matrix = new Matrix();
         RectF viewRect = new RectF(((viewWidth - point.x) / 2), 0, viewWidth - ((viewWidth - point.x) / 2), viewHeight);
-        Log.d("viewWidth-point", ":" + ((viewWidth - point.x) / 2));
         RectF bufferRect = new RectF(0, 0, point.x, point.y);
         float centerX = viewRect.centerX();
         float centerY = viewRect.centerY();
@@ -739,10 +692,6 @@ public class CameraFragment extends Fragment
         }
     }
 
-    /**
-     * Capture a still picture. This method should be called when we get a response in
-     * {@link #mCaptureCallback} from both {@link #lockFocus()}.
-     */
     private void captureStillPicture() {
         try {
             final Activity activity = getActivity();
@@ -775,7 +724,6 @@ public class CameraFragment extends Fragment
                                                @NonNull CaptureRequest request,
                                                @NonNull TotalCaptureResult result) {
                     showToast("Saved: " + mFile);
-                    Log.d(TAG, mFile.toString());
                     setExifInfo(mFile.toString());
                     unlockFocus();
                 }
@@ -828,6 +776,8 @@ public class CameraFragment extends Fragment
         }
     }
 
+    private Location location;
+
     private static class ImageSaver implements Runnable {
         // jpeg
         private final Image mImage;
@@ -865,8 +815,22 @@ public class CameraFragment extends Fragment
 
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Intent intent = new Intent(getActivity(), GPSService.class);
+        getActivity().bindService(intent, conn, BIND_AUTO_CREATE);
+    }
 
-    // [start of get GPS information]
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (isService) {
+            getActivity().unbindService(conn);
+            isService = false;
+        }
+    }
+
     GPSService mGpsService;
     boolean isService = false;
 
@@ -875,8 +839,8 @@ public class CameraFragment extends Fragment
                                        IBinder service) {
             // 서비스와 연결되었을 때 호출되는 메서드
             // 서비스 객체를 전역변수로 저장
-            GPSService.LocalBinder mb = (GPSService.LocalBinder) service;
-            mGpsService = mb.getService(); // 서비스가 제공하는 메소드 호출하여
+            GPSService.LocalBinder binder = (GPSService.LocalBinder) service;
+            mGpsService = binder.getService(); // 서비스가 제공하는 메소드 호출하여
             // 서비스쪽 객체를 전달받을수 있슴
             isService = true;
         }
@@ -884,22 +848,13 @@ public class CameraFragment extends Fragment
         public void onServiceDisconnected(ComponentName name) {
             // 서비스와 연결이 끊겼을 때 호출되는 메서드
             isService = false;
-            Toast.makeText(getApplicationContext(),
-                    "서비스 연결 해제",
-                    Toast.LENGTH_LONG).show();
         }
     };
 
     private void setExifInfo(String ImageUri) {
-        Intent intent = new Intent(getActivity().getApplicationContext(), GPSService.class);
-        getActivity().bindService(intent, conn, Context.BIND_AUTO_CREATE);
-
-        if (!isService) {
-            getActivity().unbindService(conn);
-            return;
+        if (isService) {
+            location = mGpsService.getLocation();
         }
-
-        Location location = mGpsService.getLocation();
 
         //copyExifInfo("/storage/emulated/0/LBARSNS/20181025_205520.jpg",ImageUri);
         if (ImageUri != null && location != null) {
@@ -917,7 +872,6 @@ public class CameraFragment extends Fragment
                 str0 += "0";
             }
             str += "/" + str0;
-            Log.d("straltitude", ":" + straltitude);
             straltitude += "/1";
             try {
                 ExifInterface exif = new ExifInterface(ImageUri);
@@ -928,14 +882,7 @@ public class CameraFragment extends Fragment
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            try {
-                ExifInterface exif = new ExifInterface(ImageUri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-
-        getActivity().unbindService(conn);
     }
     // [End of get GPS information]
 
@@ -949,8 +896,6 @@ public class CameraFragment extends Fragment
                     desExif.setAttribute(ExifInterface.TAG_DATETIME, srcExif.getAttribute(ExifInterface.TAG_DATETIME)); // 시간 기록
                     desExif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, srcExif.getAttribute(ExifInterface.TAG_GPS_LATITUDE)); // GPS 정보 기록
                     desExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, srcExif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
-                    Log.d("srcExif", ":" + srcExif.getAttribute(ExifInterface.TAG_GPS_LATITUDE));
-                    Log.d("srcExif", ":" + srcExif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
                     desExif.saveAttributes(); // 저장
                 }
             } catch (Exception e) {
@@ -962,7 +907,6 @@ public class CameraFragment extends Fragment
     public String convertTagGPSFormat(double coordinate) // 인코딩하는 과정으로 GPS 정보를 매개변수로 받음
     {
         String strlatitude = Location.convert(coordinate, Location.FORMAT_SECONDS); // 인코딩하여 포멧을 갖춘다.
-        Log.d("strlatitude", ":" + strlatitude);
         String[] arrlatitude = strlatitude.split(":");
         String[] arrstr = arrlatitude[2].split("\\.");
         String abc = null;
@@ -992,7 +936,7 @@ public class CameraFragment extends Fragment
             CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraId);
             float maxzoom = (characteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)) * 10;
-            Log.d("zoom_level", ":" + zoom_level);
+
             Rect m = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
             int action = event.getAction();
             float current_finger_spacing;
@@ -1118,5 +1062,4 @@ public class CameraFragment extends Fragment
                     .create();
         }
     }
-
 }

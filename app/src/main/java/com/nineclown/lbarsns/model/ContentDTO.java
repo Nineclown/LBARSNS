@@ -8,9 +8,27 @@ public class ContentDTO {
     private String imageUrl;
     private String uid;
     private String userId;
+    private Double latitude;
+    private Double longitude;
     private Long timestamp;
     private int favoriteCount;
     private HashMap<String, Boolean> favorites;
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
 
     public static class Comment {
         private String uid;
@@ -57,6 +75,8 @@ public class ContentDTO {
         this.imageUrl = null;
         this.uid = null;
         this.userId = null;
+        this.latitude = null;
+        this.longitude = null;
         this.timestamp = null;
         this.favoriteCount = 0;
         this.favorites = new HashMap<>();

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,16 +16,11 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.FragmentAlarmBinding;
 import com.nineclown.lbarsns.databinding.ItemCommentBinding;
@@ -50,7 +44,7 @@ public class AlarmFragment extends Fragment implements MainActivity.OnBackPresse
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         // Inflate the layout for this fragment
@@ -112,21 +106,18 @@ public class AlarmFragment extends Fragment implements MainActivity.OnBackPresse
 
             alarmListenerRegistration = mFirestore.collection("alarms")
                     .whereEqualTo("destinationUid", mUid)
-                    .orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                            alarmDTOs.clear();
-                            if (queryDocumentSnapshots == null) return;
-                            for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
-                                alarmDTOs.add(snapshot.toObject(AlarmDTO.class));
-                            }
-                            notifyDataSetChanged();
+                    .orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener((queryDocumentSnapshots, e) -> {
+                        alarmDTOs.clear();
+                        if (queryDocumentSnapshots == null) return;
+                        for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
+                            alarmDTOs.add(snapshot.toObject(AlarmDTO.class));
                         }
+                        notifyDataSetChanged();
                     });
         }
 
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             //View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_comment, parent, false);
             aBinding = ItemCommentBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
 
@@ -134,7 +125,7 @@ public class AlarmFragment extends Fragment implements MainActivity.OnBackPresse
         }
 
         @Override
-        public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, int position) {
             final CustomViewHolder viewHolder = (CustomViewHolder) holder;
 
             final ImageView profileImageView = viewHolder.hBinding.commentviewitemImageviewProfile;
@@ -142,17 +133,14 @@ public class AlarmFragment extends Fragment implements MainActivity.OnBackPresse
 
             mFirestore.collection("profileImages")
                     .document(alarmDTOs.get(position).getUid()).get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            // 사진에 프로필
-                            if (task.isSuccessful()) {
-                                //Object url = task.getResult().get("image");
-                                Object url = task.getResult().get("image");
-                                Glide.with(holder.itemView.getContext()).load(url)
-                                        .apply(new RequestOptions().circleCrop())
-                                        .into(profileImageView);
-                            }
+                    .addOnCompleteListener(task -> {
+                        // 사진에 프로필
+                        if (task.isSuccessful()) {
+                            //Object url = task.getResult().get("image");
+                            Object url = task.getResult().get("image");
+                            Glide.with(holder.itemView.getContext()).load(url)
+                                    .apply(new RequestOptions().circleCrop())
+                                    .into(profileImageView);
                         }
                     });
 

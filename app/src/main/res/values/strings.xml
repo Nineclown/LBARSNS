@@ -66,6 +66,11 @@
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
     <string name="AR_Mode">AR Mode</string>
 
+
+    <!-- Naver Api -->
+    <string name="Client_ID">AYJ6_Hcy_A7XpZyzJqPs</string>
+
+
     <!-- Toolbar -->
     <string name="back">Back</string>
 

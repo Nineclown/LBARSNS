@@ -35,6 +35,8 @@ dependencies {
     // sceneform
     implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.5.1'
 
+    // Naver Maps
+    implementation 'com.naver.maps.open:naver-map-api:2.1.2@aar'
 
     // gps
     implementation 'com.google.android.gms:play-services-location:16.0.0'

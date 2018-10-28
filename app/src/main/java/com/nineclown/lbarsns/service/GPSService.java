@@ -25,7 +25,7 @@ public class GPSService extends Service {
 
     private Location mLocation;
 
-    private final IBinder mBinder = new LocalBinder();
+    private IBinder mBinder = new LocalBinder();
 
 
     public Location getLocation() {
@@ -41,19 +41,6 @@ public class GPSService extends Service {
         return mBinder;
     }
 
-
-    /*
-    protected BroadcastReceiver stopReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            //Unregister the BroadcastReceiver when the notification is tapped//
-            unregisterReceiver(stopReceiver);
-            //Stop the Service//
-            stopSelf();
-        }
-    };
-*/
     public GPSService() {
     }
 
@@ -61,34 +48,14 @@ public class GPSService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        //buildNotification();
         requestLocationUpdates();
     }
 
-    //Create the persistent notification//
-  /*  private void buildNotification() {
-        String stop = "stop";
-        registerReceiver(stopReceiver, new IntentFilter(stop));
-        PendingIntent broadcastIntent = PendingIntent.getBroadcast(
-                this, 0, new Intent(stop), PendingIntent.FLAG_UPDATE_CURRENT);
-
-        // Create the persistent notification//
-        Notification.Builder builder = new Notification.Builder(this)
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText(getString(R.string.tracking_enabled_notif))
-                //Make this notification ongoing so it can’t be dismissed by the user//
-                .setOngoing(true)
-                .setContentIntent(broadcastIntent)
-                .setSmallIcon(R.drawable.gps);
-        startForeground(1, builder.build());
-    }*/
-
     //Initiate the request to track the device's location//
-    private void requestLocationUpdates() {
+    public void requestLocationUpdates() {
         LocationRequest request = new LocationRequest();
 
         //Specify how often your app should request the device’s location//
-
         // 기기의 위치 정보를 요청한다.
         request.setInterval(10000);
 
