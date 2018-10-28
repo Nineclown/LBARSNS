@@ -179,6 +179,7 @@ public class CameraFragment extends Fragment
         @Override
         public void onImageAvailable(ImageReader reader) {
             mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
+            MediaScanning scanning = new MediaScanning(getActivity().getApplicationContext(), mFile);
             //setExifInfo(mFile.toURI());
         }
 
@@ -187,7 +188,6 @@ public class CameraFragment extends Fragment
     public static final String CAMERA_FRONT = "1";
     public static final String CAMERA_BACK = "0";
     private String cameraId = CAMERA_BACK;
-    private boolean isTorchOn;
     private Switch modeSwitch;
 
     private CaptureRequest.Builder mPreviewRequestBuilder;
@@ -1079,7 +1079,7 @@ public class CameraFragment extends Fragment
 
 
     private void setAutoFlash(CaptureRequest.Builder requestBuilder) {
-        if (mFlashSupported && !isTorchOn) {
+        if (mFlashSupported) {
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
                     CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
         }

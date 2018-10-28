@@ -1,7 +1,6 @@
 package com.nineclown.lbarsns.sns;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
@@ -16,8 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -27,6 +24,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.ActivityMainBinding;
+import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.util.HashMap;
 
@@ -39,10 +37,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private FirebaseAuth mAuth;
     private String mUid;
 
-    private Fragment dailyLifeFragment;
+    /*private Fragment dailyLifeFragment;
     private Fragment infoFragment;
     private Fragment alarmFragment;
-    private Fragment userFragment;
+    private Fragment userFragment;*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,11 +53,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         mAuth = FirebaseAuth.getInstance();
         mUid = mAuth.getCurrentUser().getUid();
 
-        // fragment
+       /* // fragment
         dailyLifeFragment = new DailyLifeFragment();
         infoFragment = new InfoFragment();
         alarmFragment = new AlarmFragment();
-        userFragment = new UserFragment();
+        userFragment = new UserFragment();*/
 
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
         binding.bottomNavigation.setSelectedItemId(R.id.action_home);
@@ -89,41 +87,33 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_PROFILE_FROM_ALBUM && resultCode == Activity.RESULT_OK) {
-            Uri imageUri = data.getData();
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
 
-            // 일단 프로필 사진을 storage에 올린다.
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            Uri imageUri = result.getUri();
             final StorageReference reference = mStorage.getReference().child("userProfileImages").child(mUid);
             UploadTask uploadTask = reference.putFile(imageUri);
 
-            Task<Uri> uriTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                @Override
-                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                    if (!task.isSuccessful()) {
-                        throw task.getException();
-                    }
-
-                    // Continue with the task to get the download URL
-                    return reference.getDownloadUrl();
+            Task<Uri> uriTask = uploadTask.continueWithTask(task -> {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
                 }
-            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                @Override
-                public void onComplete(@NonNull Task<Uri> task) {
-                    if (task.isSuccessful()) {
-                        Uri downloadUri = task.getResult();
-                        String url = downloadUri.toString();
+                // Continue with the task to get the download URL
+                return reference.getDownloadUrl();
+            }).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Uri downloadUri = task.getResult();
+                    if (downloadUri == null) return;
+                    String url = downloadUri.toString();
 
-                        HashMap<String, Object> map = new HashMap<>();
-                        map.put("image", url);
-                        FirebaseFirestore.getInstance().collection("profileImages").document(mUid).set(map);
-
-                    } else {
-                        // Handle failures
-                        // ...
-                    }
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("image", url);
+                    FirebaseFirestore.getInstance().collection("profileImages").document(mUid).set(map);
+                } else {
+                    // Handle failures
+                    // ...
                 }
             });
-
         }
     }
 
@@ -132,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         setToolbarDefault();
         switch (item.getItemId()) {
             case R.id.action_home: {
-                //Fragment dailyLifeFragment = new DailyLifeFragment();
+                Fragment dailyLifeFragment = new DailyLifeFragment();
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.main_content, dailyLifeFragment)
                         .commit();
@@ -141,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             case R.id.action_search: {
 
-                //Fragment infoFragment = new InfoFragment();
+                Fragment infoFragment = new InfoFragment();
 
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.main_content, infoFragment)
@@ -157,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 return true;
             }
             case R.id.action_favorite_alarm: {
-                //Fragment alarmFragment = new AlarmFragment();
+                Fragment alarmFragment = new AlarmFragment();
 
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.main_content, alarmFragment)
@@ -166,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             }
 
             case R.id.action_account: {
-                //Fragment userFragment = new UserFragment();
+                Fragment userFragment = new UserFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("destinationUid", mUid);
                 userFragment.setArguments(bundle);
@@ -193,6 +183,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     public interface OnBackPressedListener {
         public void onBackPressed();
+
     }
 
     public void setOnBackPressedListener(OnBackPressedListener listener) {

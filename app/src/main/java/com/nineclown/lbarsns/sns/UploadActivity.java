@@ -55,25 +55,17 @@ public class UploadActivity extends AppCompatActivity {
                 .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
                 .start(this);*/
 
-        binding.uploadIvPhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CropImage.activity()
-                        .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
-                        .start(addPhotoActivity);
+        binding.uploadIvPhoto.setOnClickListener(v -> {
+            CropImage.activity()
+                    .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
+                    .start(addPhotoActivity);
 
-                /*Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
-                startActivityForResult(photoPickerIntent, PICK_IMAGE_FROM_ALBUM);*/
-            }
+            /*Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+            photoPickerIntent.setType("image/*");
+            startActivityForResult(photoPickerIntent, PICK_IMAGE_FROM_ALBUM);*/
         });
 
-        binding.addPhotoBtnUpload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                contentUpload();
-            }
-        });
+        binding.addPhotoBtnUpload.setOnClickListener(v -> contentUpload());
     }
 
     @Override
@@ -102,50 +94,44 @@ public class UploadActivity extends AppCompatActivity {
 
         UploadTask uploadTask = mStorageRef.putFile(photoUri);
 
-        Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-            @Override
-            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                if (!task.isSuccessful()) {
-                    // 실패하면 예외처리.
-                    throw Objects.requireNonNull(task.getException());
-                }
-
-                // url을 넘겨줘서 storage --> store로 전달하기 위한 전처리.
-                return mStorageRef.getDownloadUrl();
+        Task<Uri> urlTask = uploadTask.continueWithTask(task -> {
+            if (!task.isSuccessful()) {
+                // 실패하면 예외처리.
+                throw Objects.requireNonNull(task.getException());
             }
-        }).addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                Toast.makeText(UploadActivity.this, "등록 완료.", Toast.LENGTH_SHORT).show();
-                if (uri != null) {
-                    // 업로드된 이미지 주소
-                    String photoStringLink = uri.toString(); //YOU WILL GET THE DOWNLOAD URL HERE !!!!
 
-                    ContentDTO contentDTO = new ContentDTO();
+            // url을 넘겨줘서 storage --> store로 전달하기 위한 전처리.
+            return mStorageRef.getDownloadUrl();
+        }).addOnSuccessListener(uri -> {
+            Toast.makeText(UploadActivity.this, "등록 완료.", Toast.LENGTH_SHORT).show();
+            if (uri != null) {
+                // 업로드된 이미지 주소
+                String photoStringLink = uri.toString(); //YOU WILL GET THE DOWNLOAD URL HERE !!!!
 
-                    // 이미지 주소
-                    contentDTO.setImageUrl(photoStringLink);
+                ContentDTO contentDTO = new ContentDTO();
 
-                    // 유저의 UID
-                    contentDTO.setUid(mAuth.getCurrentUser().getUid());
+                // 이미지 주소
+                contentDTO.setImageUrl(photoStringLink);
 
-                    // 게시물 설명
-                    contentDTO.setExplain(binding.uploadEtExplain.getText().toString());
+                // 유저의 UID
+                contentDTO.setUid(mAuth.getCurrentUser().getUid());
 
-                    // 유저 ID
-                    contentDTO.setUserId(mAuth.getCurrentUser().getEmail());
+                // 게시물 설명
+                contentDTO.setExplain(binding.uploadEtExplain.getText().toString());
 
-                    // 게시물 업로드 시간
-                    contentDTO.setTimestamp(System.currentTimeMillis());
+                // 유저 ID
+                contentDTO.setUserId(mAuth.getCurrentUser().getEmail());
 
-                    // 게시물 댓글.
-                    mFirestore.collection("images").document().set(contentDTO);
-                    setResult(Activity.RESULT_OK);
+                // 게시물 업로드 시간
+                contentDTO.setTimestamp(System.currentTimeMillis());
 
-                    finish();
-                }
+                // 게시물 댓글.
+                mFirestore.collection("images").document().set(contentDTO);
+                setResult(Activity.RESULT_OK);
 
+                finish();
             }
+
         })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override

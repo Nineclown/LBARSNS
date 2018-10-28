@@ -68,9 +68,6 @@ public class DailyLifeFragment extends Fragment {
         alone = true;
         mainActivity = (MainActivity) getActivity();
 
-        // 일단 리사이클러 뷰를 위로 올림.
-        binding.dailylifefragmentRecyclerview.setAdapter(new DailyLifeRecyclerViewAdapter());
-        binding.dailylifefragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         mainActivity.getBinding().toolbarBtnAr.setVisibility(View.VISIBLE);
         mainActivity.getBinding().toolbarBtnAr.setOnClickListener(v -> {
@@ -82,6 +79,11 @@ public class DailyLifeFragment extends Fragment {
             mainActivity.startActivity(intent);
             //getActivity().startActivity(intent);
         });
+
+        // 일단 리사이클러 뷰를 하단으로 내림.
+        binding.dailylifefragmentRecyclerview.setAdapter(new DailyLifeRecyclerViewAdapter());
+        binding.dailylifefragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
+
         return binding.getRoot();
     }
 
@@ -190,16 +192,13 @@ public class DailyLifeFragment extends Fragment {
 
             mFirestore.collection("profileImages")
                     .document(contentDTOs.get(position).getUid()).get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            // 사진에 프로필
-                            if (task.isSuccessful()) {
-                                Object url = task.getResult().get("image");
-                                Glide.with(holder.itemView.getContext()).load(url)
-                                        .apply(new RequestOptions().circleCrop())
-                                        .into(viewHolder.hBinding.dailyviewitemIvProfile);
-                            }
+                    .addOnCompleteListener(task -> {
+                        // 사진에 프로필
+                        if (task.isSuccessful()) {
+                            Object url = task.getResult().get("image");
+                            Glide.with(holder.itemView.getContext()).load(url)
+                                    .apply(new RequestOptions().circleCrop())
+                                    .into(viewHolder.hBinding.dailyviewitemIvProfile);
                         }
                     });
             // 유저 아이디
@@ -217,12 +216,7 @@ public class DailyLifeFragment extends Fragment {
             // 좋아요 카운터 설정
             String memo = "좋아요 " + contentDTOs.get(position).getFavoriteCount() + "개";
             viewHolder.hBinding.dailyviewitemTvFavoritecounter.setText(memo);
-            viewHolder.hBinding.dailyviewitemImageviewFavorite.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    favoriteEvent(position);
-                }
-            });
+            viewHolder.hBinding.dailyviewitemImageviewFavorite.setOnClickListener(v -> favoriteEvent(position));
 
             // 좋아요 클릭
             if (contentDTOs.get(position).getFavorites().containsKey(mUid)) {
@@ -234,31 +228,27 @@ public class DailyLifeFragment extends Fragment {
             }
 
             // 게시 글의 프로필 클릭. (프래그먼트 이동)
-            viewHolder.hBinding.dailyviewitemIvProfile.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Fragment fragment = new UserFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putString("destinationUid", contentDTOs.get(position).getUid());
-                    bundle.putString("userId", contentDTOs.get(position).getUserId());
-                    // 액티비티의 PutExtra와 같은 개념이 프래그먼트에서 Argument라고 생각하면 된다.
-                    // 시작할 때만 사용할 수 있다,
-                    fragment.setArguments(bundle);
-                    getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, fragment).commit();
-                }
+            viewHolder.hBinding.dailyviewitemIvProfile.setOnClickListener(v -> {
+                Fragment fragment = new UserFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("destinationUid", contentDTOs.get(position).getUid());
+                bundle.putString("userId", contentDTOs.get(position).getUserId());
+                // 액티비티의 PutExtra와 같은 개념이 프래그먼트에서 Argument라고 생각하면 된다.
+                // 시작할 때만 사용할 수 있다,
+                fragment.setArguments(bundle);
+
+                //getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, fragment).commit();
+                mainActivity.getSupportFragmentManager().beginTransaction().replace(R.id.main_content, fragment).commit();
             });
 
             // 코멘트 클릭 할 때.
-            viewHolder.hBinding.dailyviewitemImageviewComment.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(v.getContext(), CommentActivity.class);
+            viewHolder.hBinding.dailyviewitemImageviewComment.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), CommentActivity.class);
 
-                    intent.putExtra("contentUid", contentUidList.get(position));
-                    intent.putExtra("destinationUid", contentDTOs.get(position).getUid());
-                    // 컨텍스트를 받아 오는 방법은 다양하다고 한다. View를 통해서 가져올 수도 있고, 근데 난 잘 몰라. 컨텍스트가 머하는 놈인지도 잘 몰라.
-                    startActivity(intent);
-                }
+                intent.putExtra("contentUid", contentUidList.get(position));
+                intent.putExtra("destinationUid", contentDTOs.get(position).getUid());
+                // 컨텍스트를 받아 오는 방법은 다양하다고 한다. View를 통해서 가져올 수도 있고, 근데 난 잘 몰라. 컨텍스트가 머하는 놈인지도 잘 몰라.
+                startActivity(intent);
             });
 
         }
@@ -272,29 +262,25 @@ public class DailyLifeFragment extends Fragment {
         // 좋아요를 눌렀을 때 발생하는 이벤트
         private void favoriteEvent(final int position) {
             final DocumentReference tsDoc = mFirestore.collection("images").document(contentUidList.get(position));
-            mFirestore.runTransaction(new Transaction.Function<Void>() {
-                @Nullable
-                @Override
-                public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                    DocumentSnapshot snapshot = transaction.get(tsDoc);
-                    ContentDTO contentDTO = snapshot.toObject(ContentDTO.class);
+            mFirestore.runTransaction((Transaction.Function<Void>) transaction -> {
+                DocumentSnapshot snapshot = transaction.get(tsDoc);
+                ContentDTO contentDTO = snapshot.toObject(ContentDTO.class);
 
-                    // 좋아요가 이미 눌려진 상태.
-                    if (contentDTO == null) return null;
-                    if (contentDTO.getFavorites().containsKey(mUid)) {
-                        contentDTO.setFavoriteCount(contentDTO.getFavoriteCount() - 1);
-                        contentDTO.getFavorites().remove(mUid);
+                // 좋아요가 이미 눌려진 상태.
+                if (contentDTO == null) return null;
+                if (contentDTO.getFavorites().containsKey(mUid)) {
+                    contentDTO.setFavoriteCount(contentDTO.getFavoriteCount() - 1);
+                    contentDTO.getFavorites().remove(mUid);
 
-                        // 좋아요를 아직 안누른 상태.
-                    } else {
-                        contentDTO.setFavorites(mUid, true);
-                        contentDTO.setFavoriteCount(contentDTO.getFavoriteCount() + 1);
-                        favoriteAlarm(contentDTOs.get(position).getUid());
-                    }
-
-                    transaction.set(tsDoc, contentDTO);
-                    return null;
+                    // 좋아요를 아직 안누른 상태.
+                } else {
+                    contentDTO.setFavorites(mUid, true);
+                    contentDTO.setFavoriteCount(contentDTO.getFavoriteCount() + 1);
+                    favoriteAlarm(contentDTOs.get(position).getUid());
                 }
+
+                transaction.set(tsDoc, contentDTO);
+                return null;
             });
 
         }
