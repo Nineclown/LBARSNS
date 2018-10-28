@@ -52,7 +52,7 @@ public class FcmPush {
 
                     String test = gson.toJson(fcmDTO);
 
-                    System.out.println("@@@@@@@@@@@@@@@@@@@@@" + test);
+                    //System.out.println("@@@@@@@@@@@@@@@@@@@@@" + test);
                     RequestBody body = RequestBody.create(JSON, gson.toJson(fcmDTO));
                     Request request = new Request.Builder().addHeader("Content-Type", "application/json")
                             .addHeader("Authorization", "key=" + serverKey)
@@ -67,7 +67,7 @@ public class FcmPush {
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            System.out.println(response.body().string());
+                            //System.out.println(response.body().string());
                         }
                     });
                 }

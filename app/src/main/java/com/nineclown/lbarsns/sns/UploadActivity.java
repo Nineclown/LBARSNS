@@ -4,15 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -20,7 +17,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.nineclown.lbarsns.R;
-import com.nineclown.lbarsns.camera.CameraFragment;
 import com.nineclown.lbarsns.databinding.ActivityUploadBinding;
 import com.nineclown.lbarsns.model.ContentDTO;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -32,6 +28,7 @@ import java.util.Date;
 import java.util.Objects;
 
 public class UploadActivity extends AppCompatActivity {
+    private final int PICK_IMAGE_FROM_ALBUM = 10;
     private ActivityUploadBinding binding;
     private Uri photoUri;
     private FirebaseStorage mStorage;
@@ -50,11 +47,17 @@ public class UploadActivity extends AppCompatActivity {
         mFirestore = FirebaseFirestore.getInstance();
         addPhotoActivity = this;
 
+
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent, PICK_IMAGE_FROM_ALBUM);
+
+
         binding.uploadIvPhoto.setOnClickListener(v -> {
-            CropImage.activity()
-                    .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
-                    .start(addPhotoActivity);
-            });
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(intent, PICK_IMAGE_FROM_ALBUM);
+        });
 
         binding.addPhotoBtnUpload.setOnClickListener(v -> contentUpload());
     }
@@ -62,6 +65,23 @@ public class UploadActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_FROM_ALBUM) {
+            //이미지 선택시
+            if (resultCode == Activity.RESULT_OK) {
+                // 사용할 이미지를 photoUri에 등록.
+                photoUri = data.getData();
+                // 사용할 이미지가 가진 exif 정보를 빼낸다.
+                
+
+                if (photoUri != null) {
+                    // 사용할 이미지를 크롭한다.
+                    CropImage.activity(photoUri)
+                            .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
+                            .start(addPhotoActivity);
+                }
+            }
+        }
 
         // 사진 크롭해서 그 잘린 사진의 주소.
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
@@ -76,7 +96,7 @@ public class UploadActivity extends AppCompatActivity {
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             } else {
-                finish();
+                //finish();
             }
         }
 

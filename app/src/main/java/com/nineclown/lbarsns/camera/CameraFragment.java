@@ -6,7 +6,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
@@ -922,24 +921,15 @@ public class CameraFragment extends Fragment
             straltitude += "/1";
             try {
                 ExifInterface exif = new ExifInterface(ImageUri);
-                Log.d("strlatitude0", ":" + exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE));
-                Log.d("strlongitude0", ":" + exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
-                Log.d("straltitude0", ":" + exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE));
                 exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, strlatitude);
                 exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, strlongitude);
                 exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, str);
-                Log.d("strlatitude1", ":" + exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE));
-                Log.d("strlongitude1", ":" + exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
-                Log.d("straltitude1", ":" + exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE));
                 exif.saveAttributes();
             } catch (IOException e) {
                 e.printStackTrace();
             }
             try {
                 ExifInterface exif = new ExifInterface(ImageUri);
-                Log.d("strlatitude0", ":" + exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE));
-                Log.d("strlongitude0", ":" + exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
-                Log.d("straltitude0", ":" + exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -963,8 +953,6 @@ public class CameraFragment extends Fragment
                     Log.d("srcExif", ":" + srcExif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
                     desExif.saveAttributes(); // 저장
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1086,9 +1074,6 @@ public class CameraFragment extends Fragment
 
     }
 
-    /**
-     * Shows an error message dialog.
-     */
     public static class ErrorDialog extends DialogFragment {
 
         private static final String ARG_MESSAGE = "message";
@@ -1107,20 +1092,12 @@ public class CameraFragment extends Fragment
             final Activity activity = getActivity();
             return new AlertDialog.Builder(activity)
                     .setMessage(getArguments().getString(ARG_MESSAGE))
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            activity.finish();
-                        }
-                    })
+                    .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> activity.finish())
                     .create();
         }
 
     }
 
-    /**
-     * Shows OK/Cancel confirmation dialog about camera permission.
-     */
     public static class ConfirmationDialog extends DialogFragment {
 
         @NonNull
