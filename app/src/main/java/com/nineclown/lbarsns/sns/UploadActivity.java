@@ -1,18 +1,18 @@
 package com.nineclown.lbarsns.sns;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -20,19 +20,18 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.nineclown.lbarsns.R;
+import com.nineclown.lbarsns.camera.CameraFragment;
 import com.nineclown.lbarsns.databinding.ActivityUploadBinding;
 import com.nineclown.lbarsns.model.ContentDTO;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
 public class UploadActivity extends AppCompatActivity {
-
-    private static final int PICK_IMAGE = 0;
-    private static final int PICK_IMAGE_FROM_ALBUM = 1;
     private ActivityUploadBinding binding;
     private Uri photoUri;
     private FirebaseStorage mStorage;
@@ -51,19 +50,11 @@ public class UploadActivity extends AppCompatActivity {
         mFirestore = FirebaseFirestore.getInstance();
         addPhotoActivity = this;
 
-        /*CropImage.activity()
-                .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
-                .start(this);*/
-
         binding.uploadIvPhoto.setOnClickListener(v -> {
             CropImage.activity()
                     .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
                     .start(addPhotoActivity);
-
-            /*Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-            photoPickerIntent.setType("image/*");
-            startActivityForResult(photoPickerIntent, PICK_IMAGE_FROM_ALBUM);*/
-        });
+            });
 
         binding.addPhotoBtnUpload.setOnClickListener(v -> contentUpload());
     }
@@ -72,11 +63,16 @@ public class UploadActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // 사진 크롭해서 그 잘린 사진의 주소.
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
+
             if (resultCode == RESULT_OK) {
+                // Uri에 그 주소를 담아.
                 photoUri = result.getUri();
+                // 네모칸에 사진을 올려.
                 binding.uploadIvPhoto.setImageURI(photoUri);
+
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             } else {
@@ -87,8 +83,15 @@ public class UploadActivity extends AppCompatActivity {
     }
 
     private void contentUpload() {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "PNG_" + timeStamp + ".png";
+        File m_File = new File(Environment.getExternalStorageDirectory(), "Pictures/Lbarsns");
+        if (!m_File.exists()) {
+            m_File.mkdirs();
+        }
+
+        File mFile = new File(m_File, timeStamp);
+
 
         final StorageReference mStorageRef = mStorage.getReference().child(imageFileName);
 
@@ -132,31 +135,8 @@ public class UploadActivity extends AppCompatActivity {
                 finish();
             }
 
-        })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
+        }).addOnFailureListener(e -> {
 
-                    }
-                });/*.addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                if (task.isSuccessful()) {
-                    Uri downloadUri = task.getResult();
-                    System.out.println("Upload " + downloadUri);
-                    Toast.makeText(UploadActivity.this, "Successfully uploaded", Toast.LENGTH_SHORT).show();
-                    if (downloadUri != null) {
-
-                        String photoStringLink = downloadUri.toString(); //YOU WILL GET THE DOWNLOAD URL HERE !!!!
-                        System.out.println("Upload " + photoStringLink);
-
-                    }
-
-                } else {
-                    // Handle failures
-                    // ...
-                }
-            }
-        });*/
+        });
     }
 }

@@ -77,8 +77,13 @@
             android:enabled="false"
             android:exported="false" />
 
-        <activity android:name=".camera.CameraActivity" />
-        <activity android:name=".camera.ArActivity"></activity>
+        <activity
+            android:name=".camera.CameraActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait" />
+        <activity android:name=".camera.ArActivity">
+
+        </activity>
 
         <!-- AR core 관련 -->
         <meta-data

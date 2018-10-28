@@ -1,15 +1,11 @@
 package com.nineclown.lbarsns.service;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 
@@ -18,11 +14,35 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.nineclown.lbarsns.R;
 
 public class GPSService extends Service {
-    private static final String TAG = GPSService.class.getSimpleName();
 
+    public class LocalBinder extends Binder {
+        public GPSService getService() {
+            return GPSService.this;
+        }
+    }
+
+    private Location mLocation;
+
+    private final IBinder mBinder = new LocalBinder();
+
+
+    public Location getLocation() {
+        return mLocation;
+    }
+
+    private void setLocation(Location location) {
+        mLocation = location;
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
+    }
+
+
+    /*
     protected BroadcastReceiver stopReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -33,14 +53,10 @@ public class GPSService extends Service {
             stopSelf();
         }
     };
-
+*/
     public GPSService() {
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
 
     @Override
     public void onCreate() {
@@ -50,7 +66,7 @@ public class GPSService extends Service {
     }
 
     //Create the persistent notification//
-    private void buildNotification() {
+  /*  private void buildNotification() {
         String stop = "stop";
         registerReceiver(stopReceiver, new IntentFilter(stop));
         PendingIntent broadcastIntent = PendingIntent.getBroadcast(
@@ -65,7 +81,7 @@ public class GPSService extends Service {
                 .setContentIntent(broadcastIntent)
                 .setSmallIcon(R.drawable.gps);
         startForeground(1, builder.build());
-    }
+    }*/
 
     //Initiate the request to track the device's location//
     private void requestLocationUpdates() {
@@ -95,6 +111,7 @@ public class GPSService extends Service {
                     Location location = locationResult.getLastLocation();
                     if (location != null) {
 
+                        setLocation(location);
                         //Save the location data to the database//
                         System.out.println("Latitude:" + location.getLatitude());
                         System.out.println("Longitude:" + location.getLongitude());

@@ -1,12 +1,30 @@
+/*
+ * Copyright 2017 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.nineclown.lbarsns.camera;
 
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
@@ -28,7 +46,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.support.media.ExifInterface;
+import android.media.ExifInterface;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaRecorder;
@@ -37,6 +55,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
@@ -57,6 +76,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.nineclown.lbarsns.R;
+import com.nineclown.lbarsns.service.GPSService;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -73,28 +93,72 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import static android.content.Context.LOCATION_SERVICE;
+import static com.facebook.FacebookSdk.getApplicationContext;
 
 public class CameraFragment extends Fragment
         implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback, View.OnTouchListener, LocationListener {
 
+    /**
+     * Conversion from screen rotation to JPEG orientation.
+     */
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     private static final String FRAGMENT_DIALOG = "dialog";
 
-    private static final String TAG = "CameraFragment";
+    static {
+        ORIENTATIONS.append(Surface.ROTATION_0, 90);
+        ORIENTATIONS.append(Surface.ROTATION_90, 0);
+        ORIENTATIONS.append(Surface.ROTATION_180, 270);
+        ORIENTATIONS.append(Surface.ROTATION_270, 180);
+    }
 
+    /**
+     * Tag for the {@link Log}.
+     */
+    private static final String TAG = "Camera2BasicFragment";
+
+    /**
+     * Camera state: Showing camera preview.
+     */
     private static final int STATE_PREVIEW = 0;
+
+    /**
+     * Camera state: Waiting for the focus to be locked.
+     */
     private static final int STATE_WAITING_LOCK = 1;
+
+    /**
+     * Camera state: Waiting for the exposure to be precapture state.
+     */
     private static final int STATE_WAITING_PRECAPTURE = 2;
+
+    /**
+     * Camera state: Waiting for the exposure state to be something other than precapture.
+     */
     private static final int STATE_WAITING_NON_PRECAPTURE = 3;
+
+    /**
+     * Camera state: Picture was taken.
+     */
     private static final int STATE_PICTURE_TAKEN = 4;
+
+    /**
+     * Max preview width that is guaranteed by Camera2 API
+     */
     private static final int MAX_PREVIEW_WIDTH = 1920;
+
+    /**
+     * Max preview height that is guaranteed by Camera2 API
+     */
     private static final int MAX_PREVIEW_HEIGHT = 1080;
 
     public float finger_spacing = 0;
     public int zoom_level = 1;
     public Rect zoom;
-
+    /**
+     * {@link TextureView.SurfaceTextureListener} handles several lifecycle events on a
+     * {@link TextureView}.
+     */
     private final TextureView.SurfaceTextureListener mSurfaceTextureListener
             = new TextureView.SurfaceTextureListener() {
 
@@ -119,20 +183,38 @@ public class CameraFragment extends Fragment
 
     };
 
+    /**
+     * ID of the current {@link CameraDevice}.
+     */
     private String mCameraId;
 
+    /**
+     * An {@link AutoFitTextureView} for camera preview.
+     */
     private AutoFitTextureView mTextureView;
 
+    /**
+     * A {@link CameraCaptureSession } for camera preview.
+     */
     private CameraCaptureSession mCaptureSession;
 
+    /**
+     * A reference to the opened {@link CameraDevice}.
+     */
     private CameraDevice mCameraDevice;
 
+    /**
+     * The {@link android.util.Size} of camera preview.
+     */
     private Size mPreviewSize;
 
     public static Size[] previewSizes;
     public static Size[] videoSizes;
     public static Size[] pictureSizes;
 
+    /**
+     * {@link CameraDevice.StateCallback} is called when {@link CameraDevice} changes its state.
+     */
     private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
 
         @Override
@@ -163,23 +245,38 @@ public class CameraFragment extends Fragment
 
     };
 
-
+    /**
+     * An additional thread for running tasks that shouldn't block the UI.
+     */
     private HandlerThread mBackgroundThread;
 
+    /**
+     * A {@link Handler} for running tasks in the background.
+     */
     private Handler mBackgroundHandler;
 
+    /**
+     * An {@link ImageReader} that handles still image capture.
+     */
     private ImageReader mImageReader;
 
+    /**
+     * This is the output file for our picture.
+     */
     private File mFile;
     private File m_file;
 
+    /**
+     * This a callback object for the {@link ImageReader}. "onImageAvailable" will be called when a
+     * still image is ready to be saved.
+     */
     private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
             = new ImageReader.OnImageAvailableListener() {
 
         @Override
         public void onImageAvailable(ImageReader reader) {
             mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
-            MediaScanning scanning = new MediaScanning(getActivity().getApplicationContext(), mFile);
+            MediaScanning mediaScanning = new MediaScanning(getActivity().getApplicationContext(), mFile);
             //setExifInfo(mFile.toURI());
         }
 
@@ -187,16 +284,47 @@ public class CameraFragment extends Fragment
 
     public static final String CAMERA_FRONT = "1";
     public static final String CAMERA_BACK = "0";
+
     private String cameraId = CAMERA_BACK;
+    private boolean isTorchOn;
+
     private Switch modeSwitch;
 
+    /**
+     * {@link CaptureRequest.Builder} for the camera preview
+     */
     private CaptureRequest.Builder mPreviewRequestBuilder;
+
+    /**
+     * {@link CaptureRequest} generated by {@link #mPreviewRequestBuilder}
+     */
     private CaptureRequest mPreviewRequest;
 
+    /**
+     * The current state of camera state for taking pictures.
+     *
+     * @see #mCaptureCallback
+     */
     private int mState = STATE_PREVIEW;
+
+    /**
+     * A {@link Semaphore} to prevent the app from exiting before closing the camera.
+     */
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
+
+    /**
+     * Whether the current camera device supports Flash or not.
+     */
     private boolean mFlashSupported;
+
+    /**
+     * Orientation of the camera sensor
+     */
     private int mSensorOrientation;
+
+    /**
+     * A {@link CameraCaptureSession.CaptureCallback} that handles events related to JPEG capture.
+     */
     private CameraCaptureSession.CaptureCallback mCaptureCallback
             = new CameraCaptureSession.CaptureCallback() {
 
@@ -282,6 +410,12 @@ public class CameraFragment extends Fragment
 
     protected LocationManager locationManager;
 
+
+    /**
+     * Shows a {@link Toast} on the UI thread.
+     *
+     * @param text The message to show
+     */
     private void showToast(final String text) {
         final Activity activity = getActivity();
         if (activity != null) {
@@ -1079,7 +1213,7 @@ public class CameraFragment extends Fragment
 
 
     private void setAutoFlash(CaptureRequest.Builder requestBuilder) {
-        if (mFlashSupported) {
+        if (mFlashSupported && !isTorchOn) {
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
                     CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
         }
@@ -1150,7 +1284,46 @@ public class CameraFragment extends Fragment
 
     }
 
+    ServiceConnection conn = new ServiceConnection() {
+        public void onServiceConnected(ComponentName name,
+                                       IBinder service) {
+            // 서비스와 연결되었을 때 호출되는 메서드
+            // 서비스 객체를 전역변수로 저장
+            GPSService.LocalBinder mb = (GPSService.LocalBinder) service;
+            mGpsService = mb.getService(); // 서비스가 제공하는 메소드 호출하여
+            // 서비스쪽 객체를 전달받을수 있슴
+            isService = true;
+        }
+
+        public void onServiceDisconnected(ComponentName name) {
+            // 서비스와 연결이 끊겼을 때 호출되는 메서드
+            isService = false;
+            Toast.makeText(getApplicationContext(),
+                    "서비스 연결 해제",
+                    Toast.LENGTH_LONG).show();
+        }
+    };
+
+
+    GPSService mGpsService;
+    boolean isService = false;
+
+
     private void setExifInfo(String ImageUri) {
+
+
+        Intent intent = new Intent(getActivity().getApplicationContext(), GPSService.class);
+        getActivity().bindService(intent, conn, Context.BIND_AUTO_CREATE);
+
+
+        if (!isService) {
+            getActivity().unbindService(conn);
+            return;
+
+        }
+        Location location = mGpsService.getLocation();
+
+
         Log.d("URI1234", ":" + ImageUri);
         getLocation();
         //copyExifInfo("/storage/emulated/0/LBARSNS/20181025_205520.jpg",ImageUri);
@@ -1195,6 +1368,8 @@ public class CameraFragment extends Fragment
                 e.printStackTrace();
             }
         }
+
+        getActivity().unbindService(conn);
     }
 
     private void copyExifInfo(String srcUri, String desUri) { // desUri -> Exif 값이 존재하는 이미지의 전체 경로, srcUri -> Exif 값이 없는 이미지의 전체 경로

@@ -62,7 +62,6 @@
                 tools:src="@drawable/ic_account" />
 
             <EditText
-                android:textColor="@color/colorBlack"
                 android:id="@+id/upload_et_explain"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
@@ -72,6 +71,7 @@
                 android:layout_toEndOf="@+id/upload_iv_photo"
                 android:hint="@string/Write_text"
                 android:padding="5dp"
+                android:textColor="@color/colorBlack"
                 android:textSize="@dimen/default_text_size" />
         </RelativeLayout>
 
@@ -93,19 +93,19 @@
                 android:id="@+id/upload_tv_gps_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/colorBlack"
                 android:text="@string/add_gps"
+                android:textColor="@color/colorBlack"
                 android:textStyle="bold" />
 
             <ImageView
+                android:id="@+id/upload_iv_gps"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentEnd="true"
                 android:layout_centerInParent="true"
                 android:layout_marginEnd="30dp"
-                android:layout_alignParentEnd="true"
-                android:id="@+id/upload_iv_gps"
-                android:src="@drawable/gps"
                 android:shadowColor="@color/colorDeepBlue"
-                android:layout_width="20dp"
-                android:layout_height="20dp" />
+                android:src="@drawable/gps" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -117,16 +117,16 @@
                     android:id="@+id/upload_tv_lat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="@dimen/small_text_size"
-                    android:text="lat: 127.23.1231" />
+                    android:text="lat: 127.23.1231"
+                    android:textSize="@dimen/small_text_size" />
 
                 <TextView
                     android:id="@+id/upload_tv_lon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:textSize="@dimen/small_text_size"
-                    android:text="lon: 38.213.1231" />
+                    android:text="lon: 38.213.1231"
+                    android:textSize="@dimen/small_text_size" />
             </LinearLayout>
         </RelativeLayout>
 
@@ -136,8 +136,6 @@
             android:layout_marginBottom="20dp"
             android:layout_marginTop="5dp"
             android:background="@color/colorLightGray" />
-
-
 
 
     </LinearLayout>
