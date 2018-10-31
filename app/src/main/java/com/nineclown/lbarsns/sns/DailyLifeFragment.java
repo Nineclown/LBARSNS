@@ -48,7 +48,7 @@ public class DailyLifeFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_daily_life, container, false);
@@ -104,9 +104,7 @@ public class DailyLifeFragment extends Fragment {
             contentDTOs = new ArrayList<>();
             contentUidList = new ArrayList<>();
 
-            // 내가 팔로잉 하는 사람의 데이터를 가져온다.
             mFirestore.collection("users").document(mUid).get().addOnCompleteListener(task -> {
-                alone = false;
                 if (task.isSuccessful()) {
                     FollowDTO userDTO = task.getResult().toObject(FollowDTO.class);
                     if (userDTO != null) {
@@ -114,11 +112,6 @@ public class DailyLifeFragment extends Fragment {
                     }
                 }
             });
-
-            // 팔로잉 하는 사람이 없을 경우
-            if (alone) {
-                getContents();
-            }
         }
 
 
@@ -135,30 +128,6 @@ public class DailyLifeFragment extends Fragment {
 
                             // 모든 이미지를 다돌아다니면서 현재 로그인한 사용자가 팔로잉하고 있는 사람의 글을 가져온다.
                             if (mUid.equals(item.getUid()) || following.keySet().contains(item.getUid())) {
-                                contentDTOs.add(item);
-                                contentUidList.add(snapshot.getId());
-                            }
-                        }
-
-                        // 새로고침 해주는 역할. push-driven 방식이라서,
-                        // DB가 바뀐걸 감지할 때마다 뿌려주기 위해 mFireStore.collection()~~~ 이 구문 안에 있어야 한다.
-                        notifyDataSetChanged();
-                    });
-        }
-
-        private void getContents() {
-            // 이미지를 가져오는 코드
-            imageListenerRegistration = mFirestore.collection("images").orderBy("timestamp", Query.Direction.DESCENDING)
-                    .addSnapshotListener((queryDocumentSnapshots, e) -> {
-                        if (queryDocumentSnapshots == null) return;
-                        contentDTOs.clear();
-                        contentUidList.clear(); //이거 있으면 머가 달라지냐?
-                        for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
-                            //DB에 있는 데이터를 snapshot이라는 변수에 담은 후에, ContentDTO 데이터 형식으로 변환.
-                            ContentDTO item = snapshot.toObject(ContentDTO.class);
-
-                            // 모든 이미지를 다돌아다니면서 현재 로그인한 사용자인 image만 가져온다.
-                            if (mUid.equals(item.getUid())) {
                                 contentDTOs.add(item);
                                 contentUidList.add(snapshot.getId());
                             }

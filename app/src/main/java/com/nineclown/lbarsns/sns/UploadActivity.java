@@ -85,7 +85,7 @@ public class UploadActivity extends AppCompatActivity {
         if (Latitude == null || Longitude == null) {
             binding.uploadTvLat.setText("");
             binding.uploadTvLon.setText("");
-            binding.uploadIvGps.setImageResource(R.drawable.gps);
+            binding.uploadIvGps.setImageResource(R.drawable.gps_off);
         }
         // GPS 정보가 있는 경우,
         else {
@@ -93,7 +93,7 @@ public class UploadActivity extends AppCompatActivity {
             binding.uploadTvLat.setText(lat);
             String lon = Longitude.toString();
             binding.uploadTvLon.setText(lon);
-            binding.uploadIvGps.setImageResource(R.drawable.gepse);
+            binding.uploadIvGps.setImageResource(R.drawable.gps_on);
         }
 
     }

@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                 return true;
             }
-            case R.id.action_favorite_alarm: {
+            case R.id.action_map: {
                 //Fragment alarmFragment = new AlarmFragment();
                 Fragment mapFragment = new MapFragment();
 
