@@ -49,7 +49,6 @@ public class InfoFragment extends Fragment implements MainActivity.OnBackPressed
         mFirestore = FirebaseFirestore.getInstance();
         mainActivity = (MainActivity) getActivity();
 
-
         binding.infofragmentRecyclerview.setAdapter(new InfoFragmentRecyclerViewAdapter());
         binding.infofragmentRecyclerview.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         return binding.getRoot();

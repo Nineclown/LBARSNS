@@ -117,7 +117,7 @@
                     android:id="@+id/upload_tv_lat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="lat: 127.23.1231"
+                    tools:text="lat: 127.23.1231"
                     android:textSize="@dimen/small_text_size" />
 
                 <TextView
@@ -125,7 +125,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:text="lon: 38.213.1231"
+                    tools:text="lon: 38.213.1231"
                     android:textSize="@dimen/small_text_size" />
             </LinearLayout>
         </RelativeLayout>

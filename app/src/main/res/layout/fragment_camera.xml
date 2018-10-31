@@ -35,11 +35,26 @@
             android:id="@+id/switch_focus_mode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
             android:checked="false"
             android:text="@string/AR_Mode"
             android:textColor="#ffffff" />
+
+        <TextView
+            android:text="Lati"
+            android:layout_marginBottom="10dp"
+            android:id="@+id/gps_latitude"
+            android:layout_below="@+id/switch_focus_mode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:text="Longi"
+            android:id="@+id/gps_longitude"
+            android:layout_below="@+id/gps_latitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
 
     </RelativeLayout>

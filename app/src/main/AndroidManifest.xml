@@ -37,6 +37,11 @@
             android:name=".sns.CommentActivity"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- daum kakao maps 관련 -->
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="0b01e78a2ba374ecde2112863dab7696" />
+
         <!-- [begin: fcm 푸시 메시지 관련] -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

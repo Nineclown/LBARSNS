@@ -16,7 +16,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.nineclown.lbarsns.ConvertUri;
 import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.ActivityUploadBinding;
 import com.nineclown.lbarsns.model.ContentDTO;
@@ -71,13 +70,32 @@ public class UploadActivity extends AppCompatActivity {
     private void extractGPS(String imageUri) {
         try {
             ExifInterface mExifInterface = new ExifInterface(imageUri);
-            Latitude = convertToDegree(mExifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE));
-            Longitude = convertToDegree(mExifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
-
-            mExifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+            String latlon = mExifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+            if (latlon != null) {
+                Latitude = convertToDegree(latlon);
+                Longitude = convertToDegree(mExifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setGPSInfo() {
+        // 사진이 GPS 정보가 없는 경우,
+        if (Latitude == null || Longitude == null) {
+            binding.uploadTvLat.setText("");
+            binding.uploadTvLon.setText("");
+            binding.uploadIvGps.setImageResource(R.drawable.gps);
+        }
+        // GPS 정보가 있는 경우,
+        else {
+            String lat = Latitude.toString();
+            binding.uploadTvLat.setText(lat);
+            String lon = Longitude.toString();
+            binding.uploadTvLon.setText(lon);
+            binding.uploadIvGps.setImageResource(R.drawable.gepse);
+        }
+
     }
 
     private Double convertToDegree(String loglat) {
@@ -114,11 +132,15 @@ public class UploadActivity extends AppCompatActivity {
                 // 사용할 이미지를 photoUri에 등록.
                 photoUri = data.getData();
 
+                // 사진을 선택할 때마다 초기화 해줘야 한다.
+                Longitude = null;
+                Latitude = null;
                 // 절대경로로 변환한다.
                 String uri = ConvertUri.getPath(this, photoUri);
 
                 // 사용할 이미지가 가진 exif 정보를 빼낸다.
                 extractGPS(uri);
+
 
                 if (photoUri != null) {
                     // 사용할 이미지를 크롭한다.
@@ -138,7 +160,7 @@ public class UploadActivity extends AppCompatActivity {
                 photoUri = result.getUri();
                 // 네모칸에 사진을 올려.
                 binding.uploadIvPhoto.setImageURI(photoUri);
-
+                setGPSInfo();
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             } else {

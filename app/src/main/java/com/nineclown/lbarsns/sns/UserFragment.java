@@ -7,6 +7,7 @@ import android.databinding.DataBindingUtil;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
@@ -30,7 +31,6 @@ import com.nineclown.lbarsns.databinding.FragmentUserBinding;
 import com.nineclown.lbarsns.model.AlarmDTO;
 import com.nineclown.lbarsns.model.ContentDTO;
 import com.nineclown.lbarsns.model.FollowDTO;
-import com.nineclown.lbarsns.service.FcmPush;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -340,7 +340,8 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
 
         public UserFragmentRecyclerViewAdapter() {
             contentDTOs = new ArrayList<>();
-            recyclerListenerRegistration = mFirestore.collection("images").whereEqualTo("uid", mUid).addSnapshotListener((queryDocumentSnapshots, e) -> {
+            recyclerListenerRegistration = mFirestore.collection("images")
+                    .whereEqualTo("uid", mUid).addSnapshotListener((queryDocumentSnapshots, e) -> {
                 contentDTOs.clear();
                 if (queryDocumentSnapshots == null) return;
                 //assert queryDocumentSnapshots != null;
@@ -354,7 +355,7 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
         }
 
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             int width = getResources().getDisplayMetrics().widthPixels / 3;
             ImageView imageView = new ImageView(parent.getContext());
             imageView.setLayoutParams(new LinearLayoutCompat.LayoutParams(width, width));
@@ -363,7 +364,7 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             CustomViewHolder viewHolder = (CustomViewHolder) holder;
 
             Glide.with(holder.itemView.getContext())

@@ -1,6 +1,15 @@
 apply plugin: 'com.android.application'
-
 android {
+    signingConfigs {
+        lbarsns {
+            keyAlias 'Lbarsns'
+            keyPassword 'lbarsns!!11'
+            storeFile file('C:/Users/nineClown/develop/AndroidStudioProjects/Keystore/Lbarsns.jks')
+            storePassword 'lbarsns!!11'
+        }
+        config {
+        }
+    }
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.nineclown.lbarsns"
@@ -14,6 +23,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.lbarsns
         }
     }
     dataBinding {
@@ -23,21 +33,22 @@ android {
         targetCompatibility 1.8
         sourceCompatibility 1.8
     }
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'x86_64', 'armeabi-v7a', 'armeabi'
+            universalApk false
+        }
+    }
 }
-
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:27.1.1'
     // image crop
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.0'
-    //implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
-
     // sceneform
     implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.5.1'
-
-    // Naver Maps
-    implementation 'com.naver.maps.open:naver-map-api:2.1.2@aar'
-
     // gps
     implementation 'com.google.android.gms:play-services-location:16.0.0'
     // Material Design
@@ -63,7 +74,10 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.8.0'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    implementation files('libs/libDaumMapAndroid.jar')
 }
-
 apply plugin: 'com.google.ar.sceneform.plugin'
 apply plugin: 'com.google.gms.google-services'
+
+repositories {
+}

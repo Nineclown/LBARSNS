@@ -1,12 +1,17 @@
 package com.nineclown.lbarsns.sns;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -33,6 +38,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.ActivityLoginBinding;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
@@ -74,7 +81,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mAuth = FirebaseAuth.getInstance();
         // [END initialize_auth]
 
-        //printHashKey(this);
+        printHashKey(this);
     }
 
     // [START on_start_check_user]
@@ -313,7 +320,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }*/
     }
 
-    /*public void printHashKey(Context pContext) {
+    public void printHashKey(Context pContext) {
         try {
             PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);
             for (Signature signature : info.signatures) {
@@ -327,5 +334,5 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         } catch (Exception e) {
             Log.e(TAG, "printHashKey()", e);
         }
-    }*/
+    }
 }

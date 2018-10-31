@@ -21,7 +21,6 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.nineclown.lbarsns.service.FcmPush;
 import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.ActivityCommentBinding;
 import com.nineclown.lbarsns.databinding.ItemCommentBinding;

@@ -70,6 +70,10 @@
     <!-- Naver Api -->
     <string name="Client_ID">AYJ6_Hcy_A7XpZyzJqPs</string>
 
+    <!-- Kakao API -->
+    <string name="kakao_api">52acfc875bb2647766290bfd89349ba2</string>
+
+
 
     <!-- Toolbar -->
     <string name="back">Back</string>

@@ -49,6 +49,7 @@ public class GPSService extends Service {
     public void onCreate() {
         super.onCreate();
         requestLocationUpdates();
+
     }
 
     //Initiate the request to track the device's location//
@@ -57,10 +58,9 @@ public class GPSService extends Service {
 
         //Specify how often your app should request the device’s location//
         // 기기의 위치 정보를 요청한다.
-        request.setInterval(10000);
+        request.setInterval(10000)
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        //Get the most accurate location data available//
-        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         // FusedLocationProviderClient Location 값을 가져오기 위해 사용하는 클래스.
         FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(this);
         int permission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
@@ -68,7 +68,6 @@ public class GPSService extends Service {
         //If the app currently has access to the location permission...//
         // 권한 확인.
         if (permission == PackageManager.PERMISSION_GRANTED) {
-
             //...then request location updates//
             // 위치 정보 업데이트를 요청한다.
             client.requestLocationUpdates(request, new LocationCallback() {
@@ -80,9 +79,9 @@ public class GPSService extends Service {
 
                         setLocation(location);
                         //Save the location data to the database//
-                        System.out.println("Latitude:" + location.getLatitude());
+                        /*System.out.println("Latitude:" + location.getLatitude());
                         System.out.println("Longitude:" + location.getLongitude());
-                        System.out.println("Altitude:" + location.getAltitude());
+                        System.out.println("Altitude:" + location.getAltitude());*/
 
                     }
                 }

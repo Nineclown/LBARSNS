@@ -69,9 +69,6 @@ public class ArActivity extends AppCompatActivity implements Scene.OnUpdateListe
     protected LocationManager locationManager;
 
     @Override
-    @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
-    // CompletableFuture requires api level 24
-    // FutureReturnValueIgnored is not valid
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -83,9 +80,6 @@ public class ArActivity extends AppCompatActivity implements Scene.OnUpdateListe
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
 
-
-        // When you build a Renderable, Sceneform loads its resources in the background while returning
-        // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
         ModelRenderable.builder()
                 .setSource(this, R.raw.andy)
                 .build()
@@ -103,58 +97,6 @@ public class ArActivity extends AppCompatActivity implements Scene.OnUpdateListe
         arFragment.getArSceneView().getScene().addOnUpdateListener(this);
         arFragment.getArSceneView().getScene().addOnPeekTouchListener(this);
 
-        float[] tr = new float[3];
-        tr[0] = 0;
-        tr[1] = 0;
-        tr[2] = 0;
-        float[] qu = new float[4];
-        qu[0] = 0;
-        qu[1] = 0;
-        qu[2] = 0;
-        qu[3] = 0;
-
-
-//        String str="/storage/emulated/0/TestAR/";
-//        for(int i=1; i<=7;i++)
-//        {
-//            readfile(str+Integer.toString(i)+".jpg");
-//        }
-        //arFragment.getArSceneView().getScene().addOnPeekTouchListener(this::handleOnTouch);
-//        this.trackableGestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
-//            public boolean onSingleTapUp(MotionEvent e) {
-//                onSingleTap(e);
-//                return true;
-//            }
-//
-//            public boolean onDown(MotionEvent e) {
-//                return true;
-//            }
-//        });
-
-
-        //arFragment.getArSceneView().getPlaneRenderer().setVisible(false);
-        //Session session = new Session(arFragment.getContext());
-        //arFragment.getArSceneView().setupSession();
-        //Config conf = new Config(arFragment.getArSceneView().getSession());
-        //conf.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED);
-//        arFragment.
-//        arFragment.setOnTapArPlaneListener(
-//                (HitResult hitResult, Plane plane, MotionEvent motionEvent) -> {
-//                    if (andyRenderable == null) {
-//                        return;
-//                    }
-//
-//                    // Create the Anchor.
-//                    Anchor anchor = hitResult.createAnchor();
-//                    AnchorNode anchorNode = new AnchorNode(anchor);
-//                    anchorNode.setParent(arFragment.getArSceneView().getScene());
-//
-//                    // Create the transformable andy and add it to the anchor.
-//                    TransformableNode andy = new TransformableNode(arFragment.getTransformationSystem());
-//                    andy.setParent(anchorNode);
-//                    andy.setRenderable(andyRenderable);
-//                    andy.select();
-//                });
         modeSwitch = (Switch) findViewById(R.id.switch_focus_mode);
         modeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -171,33 +113,6 @@ public class ArActivity extends AppCompatActivity implements Scene.OnUpdateListe
     @Override
     protected void onResume() {
         super.onResume();
-
-        //arFragment.getArSceneView().getSession();
-        //arFragment.getArSceneView().getScene().getCamera().;
-//        float[] tr = new float[3];
-//        tr[0]=0;
-//        tr[1]=0;
-//        tr[2]=0;
-//        float[] qu = new float[4];
-//        qu[0]=0;
-//        qu[1]=0;
-//        qu[2]=0;
-//        qu[3]=0;
-//        Pose pose = new Pose(tr, qu);
-//        anchorNode = new AnchorNode(arFragment.getArSceneView().getSession().createAnchor(pose));
-//        anchorNode.setParent(arFragment.getArSceneView().getScene());
-//
-//        if (andyRenderable == null) {
-//            return;
-//        }
-//
-//        TransformableNode andy = new TransformableNode(arFragment.getTransformationSystem());
-//        andy.setParent(anchorNode);
-//        andy.setRenderable(andyRenderable);
-//        andy.select();
-//        Log.d("test1", ":");
-
-
     }
 
     private Double convertToDegree(String stringDMS) {
@@ -219,7 +134,7 @@ public class ArActivity extends AppCompatActivity implements Scene.OnUpdateListe
         Double S1 = Double.valueOf(stringS[1]);
         Double FloatS = S0 / S1;
 
-        result = new Double(FloatD + (FloatM / (double) 60) + (FloatS / (double) 3600));
+        result = FloatD + (FloatM / (double) 60) + (FloatS / (double) 3600);
 
         return result;
 

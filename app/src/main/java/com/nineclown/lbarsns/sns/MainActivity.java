@@ -37,10 +37,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private FirebaseAuth mAuth;
     private String mUid;
 
-    /*private Fragment dailyLifeFragment;
-    private Fragment infoFragment;
-    private Fragment alarmFragment;
-    private Fragment userFragment;*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,10 +137,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 return true;
             }
             case R.id.action_favorite_alarm: {
-                Fragment alarmFragment = new AlarmFragment();
+                //Fragment alarmFragment = new AlarmFragment();
+                Fragment mapFragment = new MapFragment();
 
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.main_content, alarmFragment)
+                        .replace(R.id.main_content, mapFragment)
                         .commit();
                 return true;
             }
