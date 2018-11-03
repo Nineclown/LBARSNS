@@ -10,6 +10,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <TextView
+        android:id="@+id/pose"
+        android:layout_marginTop="30dp"
+        tools:text="여기가 얘가 나옴"
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFFFF"/>
+    <TextView
+        android:id="@+id/displaypose"
+        android:layout_marginTop="120dp"
+        tools:text="여기가 얘가 나옴"
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFFFF"/>
+
+
     <Switch
         android:id="@+id/switch_focus_mode"
         android:layout_width="wrap_content"

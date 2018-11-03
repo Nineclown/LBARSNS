@@ -150,7 +150,7 @@ public class GPSService extends Service {
 
 
         // [Start Upload Location data to Firebase]
-        request.setInterval(10000)
+        request.setInterval(20000)
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         // 서버에서 name 에 해당하는 문서를 가져와야 함.
@@ -209,7 +209,7 @@ public class GPSService extends Service {
             estimatedLocation.setLongitude(mEstimatedLongitude);
 
             // sample 과 estimated 를 비교해서 범위를 넘어서면 버린다.
-            if (sampleLocation.distanceTo(estimatedLocation) > 5000) {
+            if (sampleLocation.distanceTo(estimatedLocation) > 150) {
                 // nothing to do.
                 Log.d("Travel", "여기에 오는 경우가 있음?");
 
