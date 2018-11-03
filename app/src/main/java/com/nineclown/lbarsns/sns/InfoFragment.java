@@ -1,9 +1,11 @@
 package com.nineclown.lbarsns.sns;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -40,7 +42,7 @@ public class InfoFragment extends Fragment implements MainActivity.OnBackPressed
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_info, container, false);
@@ -75,20 +77,6 @@ public class InfoFragment extends Fragment implements MainActivity.OnBackPressed
             return;
         }
         mainActivity.setOnBackPressedListener(null);
-
-        // [START return to daily life fragment]
-        // 프래그먼트 전환 과정
-        //DailyLifeFragment dailyLifeFragment = new DailyLifeFragment();
-        /*mainActivity.getSupportFragmentManager().beginTransaction()
-                .remove(this).commit();
-        mainActivity.getSupportFragmentManager()
-                .popBackStack();*/
-
-        /*        .replace(R.id.main_content, dailyLifeFragment)
-                .addToBackStack(null)
-                .commit();
-*/
-        // BottomNavigationView 전환 과정
         mainActivity.getBinding().bottomNavigation.setSelectedItemId(R.id.action_home);
         // [END return to daily life fragment]
     }
@@ -108,23 +96,21 @@ public class InfoFragment extends Fragment implements MainActivity.OnBackPressed
 
         public InfoFragmentRecyclerViewAdapter() {
             contentDTOs = new ArrayList<>();
-
             infoListenerRegistration = mFirestore.collection("images").orderBy("timestamp")
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                            if (queryDocumentSnapshots == null) return;
-                            for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
-                                contentDTOs.add(snapshot.toObject(ContentDTO.class));
-                            }
-                            notifyDataSetChanged();
-                            // 새로고침을 하면, 리사이클러 뷰 메소드들이 다 다시 동작한데, 밑에 있는 onBind, onCerate, getItem 다.
+                    .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                        contentDTOs.clear();
+                        if (queryDocumentSnapshots == null) return;
+                        for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
+                            contentDTOs.add(snapshot.toObject(ContentDTO.class));
                         }
+                        notifyDataSetChanged();
+                        // 새로고침을 하면, 리사이클러 뷰 메소드들이 다 다시 동작한데, 밑에 있는 onBind, onCerate, getItem 다.
                     });
         }
 
+        @NonNull
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
             int width = getResources().getDisplayMetrics().widthPixels / 3;
             ImageView imageView = new ImageView(parent.getContext());
@@ -134,25 +120,22 @@ public class InfoFragment extends Fragment implements MainActivity.OnBackPressed
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, @SuppressLint("RecyclerView") final int position) {
             CustomViewHolder viewHolder = (CustomViewHolder) holder;
 
             // viewHolder.imageView.setImageResource(R.drawable.btn_signin_facebook);
             Glide.with(holder.itemView.getContext()).load(contentDTOs.get(position).getImageUrl())
                     .apply(new RequestOptions().centerCrop()).into(viewHolder.imageView);
-            viewHolder.imageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    UserFragment userFragment = new UserFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putString("destinationUid", contentDTOs.get(position).getUid());
-                    bundle.putString("userId", contentDTOs.get(position).getUserId());
+            viewHolder.imageView.setOnClickListener(v -> {
+                UserFragment userFragment = new UserFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("destinationUid", contentDTOs.get(position).getUid());
+                bundle.putString("userId", contentDTOs.get(position).getUserId());
 
-                    userFragment.setArguments(bundle);
+                userFragment.setArguments(bundle);
 
-                    getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, userFragment).commit();
+                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_content, userFragment).commit();
 
-                }
             });
         }
 
@@ -164,7 +147,7 @@ public class InfoFragment extends Fragment implements MainActivity.OnBackPressed
         private class CustomViewHolder extends RecyclerView.ViewHolder {
             private ImageView imageView;
 
-            public CustomViewHolder(ImageView imageView) {
+            CustomViewHolder(ImageView imageView) {
                 super(imageView);
                 this.imageView = imageView;
             }

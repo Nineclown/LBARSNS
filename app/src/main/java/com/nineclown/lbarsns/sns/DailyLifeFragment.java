@@ -2,6 +2,8 @@ package com.nineclown.lbarsns.sns;
 
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -29,6 +31,7 @@ import com.nineclown.lbarsns.databinding.ItemDailyBinding;
 import com.nineclown.lbarsns.model.AlarmDTO;
 import com.nineclown.lbarsns.model.ContentDTO;
 import com.nineclown.lbarsns.model.FollowDTO;
+import com.nineclown.lbarsns.service.GPSService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +43,6 @@ public class DailyLifeFragment extends Fragment {
     private FirebaseAuth mAuth;
     private String mUid;
     private ListenerRegistration imageListenerRegistration;
-    private boolean alone;
     private MainActivity mainActivity;
 
     public DailyLifeFragment() {
@@ -53,31 +55,50 @@ public class DailyLifeFragment extends Fragment {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_daily_life, container, false);
 
-        // firebase
+        // firebase 및 변수들 초기화.
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mUid = mAuth.getCurrentUser().getUid();
         fcmPush = FcmPush.getInstance();
-        alone = true;
         mainActivity = (MainActivity) getActivity();
 
-
+        // 툴바 보이게 안보이게 작업하는 부분.
         mainActivity.getBinding().toolbarBtnAr.setVisibility(View.VISIBLE);
         mainActivity.getBinding().toolbarBtnAr.setOnClickListener(v -> {
+            // 프래그먼트에서 액티비티를 호출하는 부분. 호출의 주체 및 결과는 프래그먼트를 갖고있는 액티비티에서 처리한다.
             Intent intent = new Intent(mainActivity, CameraActivity.class);
             //Intent intent = new Intent(getActivity(), CameraActivity.class);
-
-            // 프래그먼트는 결과값을 일로 받기 위해서 이렇게 하나봐. 그러면 결과는 어디서 받아? 여기서 절대 받으면 안댄다.
-            // 얘를 갖고 있는 액티비티가 갖고 있기 때문에 MainActivity 로 가서 설정해주면 된다.
             mainActivity.startActivity(intent);
             //getActivity().startActivity(intent);
         });
 
-        // 일단 리사이클러 뷰를 하단으로 내림.
+        if (isMyServiceRunning(GPSService.class)) {
+            mainActivity.getBinding().toolbarBtnRecord.setVisibility(View.VISIBLE);
+            mainActivity.getBinding().toolbarBtnRecord.setOnClickListener(v -> {
+                Intent intent = new Intent(mainActivity, GPSService.class);
+                intent.putExtra("travel", "end");
+                //Intent intent = new Intent(getActivity(), CameraActivity.class);
+                mainActivity.stopService(intent);
+                //getActivity().startActivity(intent);
+                mainActivity.getBinding().toolbarBtnRecord.setVisibility(View.GONE);
+            });
+        }
+
+        // 리사이클러 뷰 생성 및 선언은 제일 하단으로 처리함. 왜?
         binding.dailylifefragmentRecyclerview.setAdapter(new DailyLifeRecyclerViewAdapter());
         binding.dailylifefragmentRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         return binding.getRoot();
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) mainActivity.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -99,11 +120,12 @@ public class DailyLifeFragment extends Fragment {
         private ArrayList<String> contentUidList;
         private ItemDailyBinding aBinding;
 
-        public DailyLifeRecyclerViewAdapter() {
-
+        private DailyLifeRecyclerViewAdapter() {
+            // 게시글을 담기 위한 리스트 초기화.
             contentDTOs = new ArrayList<>();
             contentUidList = new ArrayList<>();
 
+            // 뷰가 처음 만들어질 때, 여기 호출이 안되던데?
             mFirestore.collection("users").document(mUid).get().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     FollowDTO userDTO = task.getResult().toObject(FollowDTO.class);
@@ -116,29 +138,28 @@ public class DailyLifeFragment extends Fragment {
 
 
         private void getContents(final HashMap<String, Boolean> following) {
-            // 이미지를 가져오는 코드
             imageListenerRegistration = mFirestore.collection("images").orderBy("timestamp", Query.Direction.DESCENDING)
                     .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                        // snapshot 이 push-driven 방식이라서, DB가 바뀐걸 알아채고 아래 연산을 수행한다.
                         if (queryDocumentSnapshots == null) return;
                         contentDTOs.clear();
                         contentUidList.clear(); //이거 있으면 머가 달라지냐?
                         for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
-                            //DB에 있는 데이터를 snapshot이라는 변수에 담은 후에, ContentDTO 데이터 형식으로 변환.
+                            //DB에 있는 데이터를 snapshot 변수에 담은 후에, ContentDTO 데이터 형식으로 변환.
                             ContentDTO item = snapshot.toObject(ContentDTO.class);
-
                             // 모든 이미지를 다돌아다니면서 현재 로그인한 사용자가 팔로잉하고 있는 사람의 글을 가져온다.
                             if (mUid.equals(item.getUid()) || following.keySet().contains(item.getUid())) {
                                 contentDTOs.add(item);
+                                // getId()를 통해 document 의 id를 가져옴.
                                 contentUidList.add(snapshot.getId());
                             }
                         }
-
-                        // 새로고침 해주는 역할. push-driven 방식이라서,
-                        // DB가 바뀐걸 감지할 때마다 뿌려주기 위해 mFireStore.collection()~~~ 이 구문 안에 있어야 한다.
+                        // 그리고 마지막에 notify를 호출해서 view를 업데이트.
                         notifyDataSetChanged();
                     });
         }
 
+        @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             // 뷰를 설정하는 곳. 가져오는 곳.
@@ -183,13 +204,13 @@ public class DailyLifeFragment extends Fragment {
             // 좋아요 클릭
             if (contentDTOs.get(position).getFavorites().containsKey(mUid)) {
                 viewHolder.hBinding.dailyviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite);
-
-                // 좋아요 다시 클릭.
-            } else {
+            }
+            // 좋아요 다시 클릭.
+            else {
                 viewHolder.hBinding.dailyviewitemImageviewFavorite.setImageResource(R.drawable.ic_favorite_border);
             }
 
-            // 게시 글의 프로필 클릭. (프래그먼트 이동)
+            // 게시글의 프로필 클릭. (프래그먼트 이동)
             viewHolder.hBinding.dailyviewitemIvProfile.setOnClickListener(v -> {
                 Fragment fragment = new UserFragment();
                 Bundle bundle = new Bundle();
@@ -206,7 +227,6 @@ public class DailyLifeFragment extends Fragment {
             // 코멘트 클릭 할 때.
             viewHolder.hBinding.dailyviewitemImageviewComment.setOnClickListener(v -> {
                 Intent intent = new Intent(v.getContext(), CommentActivity.class);
-
                 intent.putExtra("contentUid", contentUidList.get(position));
                 intent.putExtra("destinationUid", contentDTOs.get(position).getUid());
                 // 컨텍스트를 받아 오는 방법은 다양하다고 한다. View를 통해서 가져올 수도 있고, 근데 난 잘 몰라. 컨텍스트가 머하는 놈인지도 잘 몰라.

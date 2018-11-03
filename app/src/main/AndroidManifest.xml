@@ -82,8 +82,6 @@
             android:theme="@style/Base.Theme.AppCompat" />
         <!-- [end: 이미지 크롭 관련 API -->
 
-        <activity android:name=".GPSTracker" />
-
         <service android:name=".service.GPSService" />
 
         <activity

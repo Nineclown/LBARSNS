@@ -1,6 +1,8 @@
 package com.nineclown.lbarsns.sns;
 
 import android.Manifest;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
@@ -29,7 +31,6 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
-    private static final int PICK_PROFILE_FROM_ALBUM = 10;
     private ActivityMainBinding binding;
     private OnBackPressedListener mListener;
     private FirebaseStorage mStorage;
@@ -41,16 +42,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // 뷰를 바인딩해주는 작업.
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-        // firebase
+        // firebase 변수 초기화.
         mStorage = FirebaseStorage.getInstance();
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mUid = mAuth.getCurrentUser().getUid();
 
+        // 바텀 네비게이션에 리스너를 달고, 홈 화면을 호출.
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
         binding.bottomNavigation.setSelectedItemId(R.id.action_home);
+
         // 앨범 접근 권한 요청
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
 
@@ -60,10 +65,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private void registerPushToken() {
-        String pushToken = FirebaseInstanceId.getInstance().getToken();
+        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                String pushToken = task.getResult().getToken();
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("pushToken", pushToken);
+                mFirestore.collection("pushTokens").document(mUid).set(map);
+            }
+        });
+
+        // 이 방식은 deprecated 됌.
+        /*String pushToken = FirebaseInstanceId.getInstance().getToken();
         HashMap<String, Object> map = new HashMap<>();
         map.put("pushToken", pushToken);
-        mFirestore.collection("pushTokens").document(mUid).set(map);
+        mFirestore.collection("pushTokens").document(mUid).set(map);*/
     }
 
     @Override
@@ -77,14 +92,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // Crop 결과를 fragment가 아니라 activity 에서 받는다.
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
 
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             Uri imageUri = result.getUri();
             final StorageReference reference = mStorage.getReference().child("userProfileImages").child(mUid);
-            UploadTask uploadTask = reference.putFile(imageUri);
 
-            Task<Uri> uriTask = uploadTask.continueWithTask(task -> {
+            reference.putFile(imageUri).continueWithTask(task -> {
                 if (!task.isSuccessful()) {
                     throw task.getException();
                 }
@@ -170,10 +185,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         binding.toolbarBtnAr.setVisibility(View.GONE);
         binding.toolbarUsername.setVisibility(View.GONE);
         binding.toolbarTitleImage.setVisibility(View.VISIBLE);
+        binding.toolbarBtnRecord.setVisibility(View.GONE);
     }
 
     public interface OnBackPressedListener {
-        public void onBackPressed();
+        void onBackPressed();
 
     }
 

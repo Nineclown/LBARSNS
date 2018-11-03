@@ -1,6 +1,7 @@
 package com.nineclown.lbarsns.camera;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -159,7 +160,6 @@ public class CameraFragment extends Fragment
 
     };
 
-
     private HandlerThread mBackgroundThread;
     private Handler mBackgroundHandler;
     private ImageReader mImageReader;
@@ -172,6 +172,7 @@ public class CameraFragment extends Fragment
         public void onImageAvailable(ImageReader reader) {
             mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
             MediaScanning mediaScanning = new MediaScanning(getActivity().getApplicationContext(), mFile);
+
         }
 
     };
@@ -354,15 +355,7 @@ public class CameraFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
-        int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
-        int newUiOptions = uiOptions;
-        boolean isImmersiveModeEnabled = ((uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) == uiOptions);
-        if (isImmersiveModeEnabled) {
-            Log.i("Is on?", "Turning immersive mode mode off. ");
-        } else {
-            Log.i("Is on?", "Turning immersive mode mode on.");
-        }
-
+        int newUiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
         newUiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         newUiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
         newUiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
@@ -401,6 +394,25 @@ public class CameraFragment extends Fragment
             new ConfirmationDialog().show(getChildFragmentManager(), FRAGMENT_DIALOG);
         } else {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+        }
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d("GPS Service", "Camera에서 Service 실행");
+        Intent intent = new Intent(getActivity(), GPSService.class);
+        getActivity().bindService(intent, conn, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (isService) {
+            getActivity().unbindService(conn);
+            Log.d("GPS Service", "Camera에서 Service 죽임");
+            isService = false;
         }
     }
 
@@ -652,7 +664,7 @@ public class CameraFragment extends Fragment
 
     private void lockFocus() {
 
-        String TimeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        @SuppressLint("SimpleDateFormat") String TimeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         TimeStamp = TimeStamp + ".jpg";
         //TimeStamp = "/TestCamera/" + TimeStamp;
         mFile = new File(m_file, TimeStamp);
@@ -792,14 +804,16 @@ public class CameraFragment extends Fragment
 
         @Override
         public void run() {
-            ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
-            byte[] bytes = new byte[buffer.remaining()];
-            buffer.get(bytes);
             FileOutputStream output = null;
             try {
+                ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
+
                 output = new FileOutputStream(mFile);
                 output.write(bytes);
-            } catch (IOException e) {
+
+            } catch (IOException | IllegalStateException e) {
                 e.printStackTrace();
             } finally {
                 mImage.close();
@@ -818,17 +832,11 @@ public class CameraFragment extends Fragment
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        Intent intent = new Intent(getActivity(), GPSService.class);
-        getActivity().bindService(intent, conn, BIND_AUTO_CREATE);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        if (isService) {
-            getActivity().unbindService(conn);
-            isService = false;
-        }
     }
 
     GPSService mGpsService;
@@ -853,7 +861,9 @@ public class CameraFragment extends Fragment
 
     private void setExifInfo(String ImageUri) {
         if (isService) {
+            mGpsService.getLocation();
             location = mGpsService.getLocation();
+            Log.d("GPS Service", "Camera에서 GPS: lat, lon" + location.getLatitude() + ", " + location.getLongitude());
         }
 
         //copyExifInfo("/storage/emulated/0/LBARSNS/20181025_205520.jpg",ImageUri);
@@ -886,24 +896,6 @@ public class CameraFragment extends Fragment
     }
     // [End of get GPS information]
 
-    private void copyExifInfo(String srcUri, String desUri) { // desUri -> Exif 값이 존재하는 이미지의 전체 경로, srcUri -> Exif 값이 없는 이미지의 전체 경로
-        if (desUri != null && srcUri != null) {
-            try {
-                ExifInterface srcExif = new ExifInterface(srcUri); // Exif 값이 존재하는 이미지로 ExifInterface 인스턴스 생성
-                ExifInterface desExif = new ExifInterface(desUri); // Exif 값이 없는 이미지로 ExifInterface 인스턴스 생성
-
-                if (srcExif != null && desExif != null) {
-                    desExif.setAttribute(ExifInterface.TAG_DATETIME, srcExif.getAttribute(ExifInterface.TAG_DATETIME)); // 시간 기록
-                    desExif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, srcExif.getAttribute(ExifInterface.TAG_GPS_LATITUDE)); // GPS 정보 기록
-                    desExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, srcExif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
-                    desExif.saveAttributes(); // 저장
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public String convertTagGPSFormat(double coordinate) // 인코딩하는 과정으로 GPS 정보를 매개변수로 받음
     {
         String strlatitude = Location.convert(coordinate, Location.FORMAT_SECONDS); // 인코딩하여 포멧을 갖춘다.
@@ -930,6 +922,7 @@ public class CameraFragment extends Fragment
     }
 
 
+    @SuppressLint("ClickableViewAccessibility")
     public boolean onTouch(View v, MotionEvent event) {
         try {
             Activity activity = getActivity();

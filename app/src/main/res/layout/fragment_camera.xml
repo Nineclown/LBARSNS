@@ -42,19 +42,19 @@
             android:textColor="#ffffff" />
 
         <TextView
-            android:text="Lati"
-            android:layout_marginBottom="10dp"
             android:id="@+id/gps_latitude"
-            android:layout_below="@+id/switch_focus_mode"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/switch_focus_mode"
+            android:layout_marginBottom="10dp"
+            android:text="Lati" />
 
         <TextView
-            android:text="Longi"
             android:id="@+id/gps_longitude"
-            android:layout_below="@+id/gps_latitude"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/gps_latitude"
+            android:text="Longi" />
 
 
     </RelativeLayout>

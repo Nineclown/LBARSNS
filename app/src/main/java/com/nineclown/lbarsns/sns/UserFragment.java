@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -66,7 +67,7 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         // 뷰를 생성해주는건 최상단에 위치해야 함.
@@ -275,8 +276,8 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
                     binding.accountBtnFollowSignout.setText(getString(R.string.follow));
                     binding.accountBtnFollowSignout.setTypeface(null, Typeface.BOLD);
                     binding.accountBtnFollowSignout.setTextColor(ContextCompat.getColor(getContext(), R.color.colorWhite));
-                    binding.accountBtnFollowSignout.getBackground().setColorFilter(ContextCompat.getColor(getActivity(), R.color.colorDeepBlue), PorterDuff.Mode.MULTIPLY);
-
+                    binding.accountBtnFollowSignout.getBackground()
+                            .setColorFilter(ContextCompat.getColor(getActivity(), R.color.colorDeepBlue), PorterDuff.Mode.MULTIPLY);
                 }
             }
         });
@@ -284,7 +285,8 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
     }
 
     private void getFollowing() {
-        followingListenerRegistration = mFirestore.collection("users").document(mUid).addSnapshotListener((documentSnapshot, e) -> {
+        followingListenerRegistration = mFirestore.collection("users").document(mUid)
+                .addSnapshotListener((documentSnapshot, e) -> {
             if (documentSnapshot == null) return;
             FollowDTO followDTO = documentSnapshot.toObject(FollowDTO.class);
             if (followDTO == null) return;
@@ -301,22 +303,6 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
         // null 처리
         if (mainActivity == null) return;
         mainActivity.setOnBackPressedListener(null);
-
-
-        // [START return to daily life fragment]
-        // 프래그먼트 전환 과정
-
-
-        /*mainActivity.getSupportFragmentManager().beginTransaction()
-                .remove(this).commit();
-        mainActivity.getSupportFragmentManager()
-                .popBackStack();*/
-
-        /*DailyLifeFragment dailyLifeFragment = new DailyLifeFragment();
-        mainActivity.getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_content, dailyLifeFragment)
-                .addToBackStack(null)
-                .commit();*/
 
         // BottomNavigationView 전환 과정
         mainActivity.getBinding().bottomNavigation.setSelectedItemId(id.action_home);
@@ -349,11 +335,13 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
                     contentDTOs.add(snapshot.toObject(ContentDTO.class));
                 }
                 size = Integer.toString(contentDTOs.size());
+                        Toast.makeText(mainActivity, "contentDTOs size: " + size, Toast.LENGTH_SHORT).show();
                 binding.accountTvPostCount.setText(size);
                 notifyDataSetChanged();
             });
         }
 
+        @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             int width = getResources().getDisplayMetrics().widthPixels / 3;

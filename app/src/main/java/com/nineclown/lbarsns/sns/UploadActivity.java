@@ -8,17 +8,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.media.ExifInterface;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.ActivityUploadBinding;
 import com.nineclown.lbarsns.model.ContentDTO;
+import com.nineclown.lbarsns.model.TravelDTO;
+import com.nineclown.lbarsns.service.GPSService;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -36,35 +37,60 @@ public class UploadActivity extends AppCompatActivity {
     private FirebaseStorage mStorage;
     private FirebaseAuth mAuth;
     private FirebaseFirestore mFirestore;
-    private Activity addPhotoActivity;
+    private Activity uploadActivity;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_upload);
 
-        // firebase 관련.
+        // firebase 및 변수 초기화
         mStorage = FirebaseStorage.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mFirestore = FirebaseFirestore.getInstance();
-        addPhotoActivity = this;
 
+        uploadActivity = this;
+        photoUri = null;
         Latitude = null;
         Longitude = null;
 
-
-        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-        photoPickerIntent.setType("image/*");
-        startActivityForResult(photoPickerIntent, PICK_IMAGE_FROM_ALBUM);
-
-
+        // 사진 클릭할 때 리스너.
         binding.uploadIvPhoto.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
             startActivityForResult(intent, PICK_IMAGE_FROM_ALBUM);
         });
 
-        binding.addPhotoBtnUpload.setOnClickListener(v -> contentUpload());
+        // 업로드 버튼 누를때 리스너.
+        binding.uploadBtnUpload.setOnClickListener((View v) -> {
+            if (photoUri != null)
+                contentUpload();
+            else
+                Toast.makeText(uploadActivity, "사진이 없어요", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.uploadBtnRecordTravel.setOnClickListener(v -> {
+           if (binding.uploadEtTravelName.getText() == null) {
+               Toast.makeText(uploadActivity, "제목을 입력하세요", Toast.LENGTH_SHORT).show();
+           }  else {
+               TravelDTO travelDTO = new TravelDTO();
+               travelDTO.setUid(mAuth.getCurrentUser().getUid());
+
+               travelDTO.setUserId(mAuth.getCurrentUser().getEmail());
+
+               String name = binding.uploadEtTravelName.getText().toString();
+               travelDTO.setTravelId(name);
+
+               travelDTO.setTimestamp(System.currentTimeMillis());
+
+               mFirestore.collection("travels").document().set(travelDTO);
+
+               recordTravelRoute(name);
+
+               finish();
+           }
+        });
     }
 
     private void extractGPS(String imageUri) {
@@ -135,10 +161,11 @@ public class UploadActivity extends AppCompatActivity {
                 // 사진을 선택할 때마다 초기화 해줘야 한다.
                 Longitude = null;
                 Latitude = null;
+
                 // 절대경로로 변환한다.
                 String uri = ConvertUri.getPath(this, photoUri);
 
-                // 사용할 이미지가 가진 exif 정보를 빼낸다.
+                // 사용할 이미지가 가진 exif 정보(위, 경도)를 빼낸다.
                 extractGPS(uri);
 
 
@@ -146,7 +173,7 @@ public class UploadActivity extends AppCompatActivity {
                     // 사용할 이미지를 크롭한다.
                     CropImage.activity(photoUri)
                             .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
-                            .start(addPhotoActivity);
+                            .start(uploadActivity);
                 }
             }
         }
@@ -176,9 +203,15 @@ public class UploadActivity extends AppCompatActivity {
 
         final StorageReference mStorageRef = mStorage.getReference().child(imageFileName);
 
-        UploadTask uploadTask = mStorageRef.putFile(photoUri);
+        /* 로컬에도 사진을 저장하고 싶으면 이곳에서 해당 코드 작성
+         * #####################
+         * #####################
+         * */
 
-        Task<Uri> urlTask = uploadTask.continueWithTask(task -> {
+        // UploadTask uploadTask = mStorageRef.putFile(photoUri);
+        // Task<Uri> urlTask = uploadTask.continueWithTask(task -> {
+
+        mStorageRef.putFile(photoUri).continueWithTask(task -> {
             if (!task.isSuccessful()) {
                 // 실패하면 예외처리.
                 throw Objects.requireNonNull(task.getException());
@@ -212,7 +245,7 @@ public class UploadActivity extends AppCompatActivity {
                 // 게시물 업로드 시간
                 contentDTO.setTimestamp(System.currentTimeMillis());
 
-                // 게시물 댓글.
+                // DB에 업로드.
                 mFirestore.collection("images").document().set(contentDTO);
                 setResult(Activity.RESULT_OK);
 
@@ -222,5 +255,12 @@ public class UploadActivity extends AppCompatActivity {
         }).addOnFailureListener(e -> {
 
         });
+    }
+
+    private void recordTravelRoute(String travelId) {
+        Intent intent = new Intent(this, GPSService.class);
+        intent.putExtra("travel", "start");
+        intent.putExtra("name", travelId);
+        startService(intent);
     }
 }

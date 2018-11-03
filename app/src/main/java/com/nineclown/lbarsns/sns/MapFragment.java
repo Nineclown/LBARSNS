@@ -9,9 +9,13 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.FragmentMapBinding;
+import com.nineclown.lbarsns.model.TravelDTO;
 
 import net.daum.mf.map.api.CameraUpdateFactory;
 import net.daum.mf.map.api.MapPoint;
@@ -19,13 +23,19 @@ import net.daum.mf.map.api.MapPointBounds;
 import net.daum.mf.map.api.MapPolyline;
 import net.daum.mf.map.api.MapView;
 
+import java.util.ArrayList;
+
 /**
  * A simple {@link Fragment} subclass.
  */
 public class MapFragment extends Fragment {
     private FragmentMapBinding binding;
+    private FirebaseFirestore mFirestore;
     private MapView mapView;
     private MainActivity mainActivity;
+    private MapPolyline polyline;
+    private ArrayList<TravelDTO.LatLon> latLons;
+    private String travelName;
 
     public MapFragment() {
         // Required empty public constructor
@@ -38,48 +48,67 @@ public class MapFragment extends Fragment {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_map, container, false);
 
+
+        mFirestore = FirebaseFirestore.getInstance();
         mainActivity = (MainActivity) getActivity();
-
         mapView = new MapView(mainActivity);
+        polyline = new MapPolyline();
+        latLons = new ArrayList<>();
 
 
-
-        MapPolyline polyline = new MapPolyline();
         polyline.setTag(1000);
         polyline.setLineColor(Color.argb(128, 255, 51, 0)); // Polyline 컬러 지정.
 
-        // Polyline 좌표 지정.
-        //polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.537291, 127.005531));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.537400, 127.004515));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.537390, 127.004817));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.537688, 127.005319));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.537887, 127.005525));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.537963, 127.005695));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.538126, 127.005772));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.538553, 127.005750));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.538313, 127.005775));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.538542, 127.005805));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.538485, 127.005831));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.539051, 127.005875));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.539123, 127.005853));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.539231, 127.005902));
-        polyline.addPoint(MapPoint.mapPointWithGeoCoord(37.539322, 127.006118));
-
-        // Polyline 지도에 올리기.
-        mapView.addPolyline(polyline);
-
-        // 지도뷰의 중심좌표와 줌레벨을 Polyline이 모두 나오도록 조정.
-        MapPointBounds mapPointBounds = new MapPointBounds(polyline.getMapPoints());
-        int padding = 100; // px
-        mapView.moveCamera(CameraUpdateFactory.newMapPointBounds(mapPointBounds, padding));
-
-        binding.mapView.addView(mapView);
-
-
-
-
-
+        getTravel();
         return binding.getRoot();
     }
 
+    private void drawMaps() {
+        for (TravelDTO.LatLon data : latLons) {
+            Double lat = data.getLatitude();
+            Double lon = data.getLongitude();
+            polyline.addPoint(MapPoint.mapPointWithGeoCoord(lat, lon));
+        }
+
+        String size = Integer.toString(latLons.size());
+        Toast.makeText(mainActivity, "size: " + size, Toast.LENGTH_SHORT).show();
+    }
+
+    private void getTravel() {
+        mFirestore.collection("travels").orderBy("timestamp").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                travelName = task.getResult().getDocuments().get(0).getId();
+                getData();
+            }
+        });
+    }
+
+    private void getData() {
+        // [START get_all_gps]
+        mFirestore.collection("travels").document(travelName)
+                .collection("locations")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            latLons.add(document.toObject(TravelDTO.LatLon.class));
+                        }
+                        Toast.makeText(mainActivity, "제발 좀: " + latLons.size(), Toast.LENGTH_SHORT).show();
+                        drawMaps();
+                        mapView.addPolyline(polyline);
+
+                        // 지도뷰의 중심좌표와 줌레벨을 Polyline이 모두 나오도록 조정.
+                        MapPointBounds mapPointBounds = new MapPointBounds(polyline.getMapPoints());
+                        int padding = 100; // px
+                        mapView.moveCamera(CameraUpdateFactory.newMapPointBounds(mapPointBounds, padding));
+
+                        binding.mapView.addView(mapView);
+
+                    } else {
+                        Toast.makeText(mainActivity, "실패했어.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        // [END get_all_gps]
+    }
 }
