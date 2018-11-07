@@ -89,7 +89,7 @@ public class MapFragment extends Fragment {
     private void getData() {
         // [START get_all_gps]
         mFirestore.collection("travels").document(travelName)
-                .collection("locations")
+                .collection("locations").orderBy("timestamp") // 여기서 정렬해서 가져와야지..... 나는 바보다.
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {

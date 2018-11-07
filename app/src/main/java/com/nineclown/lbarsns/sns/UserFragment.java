@@ -2,6 +2,7 @@ package com.nineclown.lbarsns.sns;
 
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.PorterDuff;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +23,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -322,17 +326,23 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
         // 이미지뷰 하나만 쓸꺼라서 따로 xml 파일을 불러올 필요 없다.
 
         private ArrayList<ContentDTO> contentDTOs;
+        private ArrayList<String> contentUidList;
         private String size;
 
         public UserFragmentRecyclerViewAdapter() {
             contentDTOs = new ArrayList<>();
+            contentUidList = new ArrayList<>();
+
             recyclerListenerRegistration = mFirestore.collection("images")
                     .whereEqualTo("uid", mUid).addSnapshotListener((queryDocumentSnapshots, e) -> {
                 contentDTOs.clear();
+                contentUidList.clear();
+
                 if (queryDocumentSnapshots == null) return;
                 //assert queryDocumentSnapshots != null;
                 for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
                     contentDTOs.add(snapshot.toObject(ContentDTO.class));
+                    contentUidList.add(snapshot.getId());
                 }
                 size = Integer.toString(contentDTOs.size());
                 binding.accountTvPostCount.setText(size);
@@ -357,6 +367,26 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
             Glide.with(holder.itemView.getContext())
                     .load(contentDTOs.get(position).getImageUrl())
                     .apply(new RequestOptions().centerCrop()).into(viewHolder.imageView);
+
+            viewHolder.imageView.setOnClickListener(v -> {
+                AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+                builder.setTitle("ㄹㅇ")
+                        .setMessage("지울꼬야?")
+                        .setPositiveButton("delete",
+                                (dialog, which) -> mFirestore.collection("images")
+                                        .document(contentUidList.get(position))
+                                        .delete()
+                                        .addOnCompleteListener(task -> {
+                                            if(task.isSuccessful()) {
+                                                Toast.makeText(mainActivity, "삭제되었습니다.", Toast.LENGTH_SHORT).show();
+                                                notifyDataSetChanged();
+                                            }
+                                        }))
+                        .setNegativeButton("내가 생각이 짧았어",
+                                (dialog, which) -> Toast.makeText(mainActivity, "취소", Toast.LENGTH_SHORT).show())
+                        .show();
+
+            });
 
         }
 

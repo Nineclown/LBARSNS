@@ -32,6 +32,8 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
     private ActivityMainBinding binding;
+
+    private final int UPLOAD_ACTIVITY = 1002;
     private OnBackPressedListener mListener;
     private FirebaseStorage mStorage;
     private FirebaseFirestore mFirestore;
@@ -92,6 +94,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        if (requestCode == UPLOAD_ACTIVITY) {
+            binding.bottomNavigation.setSelectedItemId(R.id.action_home);
+        }
         // Crop 결과를 fragment가 아니라 activity 에서 받는다.
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
 
@@ -146,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             case R.id.action_upload: {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(new Intent(this, UploadActivity.class));
+                    startActivityForResult(new Intent(this, UploadActivity.class), UPLOAD_ACTIVITY);
                 }
 
                 return true;

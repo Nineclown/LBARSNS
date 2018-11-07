@@ -87,7 +87,6 @@ public class UploadActivity extends AppCompatActivity {
                mFirestore.collection("travels").document().set(travelDTO);
 
                recordTravelRoute(name);
-
                finish();
            }
         });
