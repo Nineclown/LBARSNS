@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.nineclown.lbarsns.R;
 import com.nineclown.lbarsns.databinding.FragmentMapBinding;
@@ -51,7 +52,9 @@ public class MapFragment extends Fragment {
 
         mFirestore = FirebaseFirestore.getInstance();
         mainActivity = (MainActivity) getActivity();
-        mapView = new MapView(mainActivity);
+        if (mapView == null) {
+            mapView = new MapView(mainActivity);
+        }
         polyline = new MapPolyline();
         latLons = new ArrayList<>();
 
@@ -75,7 +78,7 @@ public class MapFragment extends Fragment {
     }
 
     private void getTravel() {
-        mFirestore.collection("travels").orderBy("timestamp").get().addOnCompleteListener(task -> {
+        mFirestore.collection("travels").orderBy("timestamp", Query.Direction.DESCENDING).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 travelName = task.getResult().getDocuments().get(0).getId();
                 getData();
@@ -93,7 +96,8 @@ public class MapFragment extends Fragment {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             latLons.add(document.toObject(TravelDTO.LatLon.class));
                         }
-                        Toast.makeText(mainActivity, "제발 좀: " + latLons.size(), Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(mainActivity, "제발 좀: " + latLons.size(), Toast.LENGTH_SHORT).show();
+                        if (latLons.size() == 0) return;
                         drawMaps();
                         mapView.addPolyline(polyline);
 
@@ -105,7 +109,7 @@ public class MapFragment extends Fragment {
                         binding.mapView.addView(mapView);
 
                     } else {
-                        Toast.makeText(mainActivity, "실패했어.", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(mainActivity, "실패했어.", Toast.LENGTH_SHORT).show();
                     }
                 });
 

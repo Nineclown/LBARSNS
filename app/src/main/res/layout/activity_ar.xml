@@ -1,41 +1,27 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".camera.ArActivity">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <fragment
-        android:id="@+id/ux_fragment"
-        android:name="com.nineclown.lbarsns.camera.ExArFragment"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        tools:context=".camera.ArActivity">
 
-    <TextView
-        android:id="@+id/pose"
-        android:layout_marginTop="30dp"
-        tools:text="여기가 얘가 나옴"
-        android:layout_alignParentTop="true"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#FFFFFFFF"/>
-    <TextView
-        android:id="@+id/displaypose"
-        android:layout_marginTop="120dp"
-        tools:text="여기가 얘가 나옴"
-        android:layout_alignParentTop="true"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#FFFFFFFF"/>
+        <fragment
+            android:id="@+id/ux_fragment"
+            android:name="com.nineclown.lbarsns.camera.ExArFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
+        <Switch
+            android:id="@+id/switch_focus_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:checked="true"
+            android:text="@string/AR_Mode"
+            android:textColor="#ffffff" />
 
-    <Switch
-        android:id="@+id/switch_focus_mode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:checked="true"
-        android:text="@string/AR_Mode"
-        android:textColor="#ffffff" />
+    </RelativeLayout>
 
-</RelativeLayout>
+</layout>

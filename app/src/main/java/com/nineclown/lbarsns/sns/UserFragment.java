@@ -334,6 +334,7 @@ public class UserFragment extends Fragment implements MainActivity.OnBackPressed
                 for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
                     contentDTOs.add(snapshot.toObject(ContentDTO.class));
                 }
+                size = Integer.toString(contentDTOs.size());
                 binding.accountTvPostCount.setText(size);
                 notifyDataSetChanged();
             });
