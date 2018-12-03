@@ -8,6 +8,14 @@
         android:orientation="vertical"
         tools:context=".sns.UploadActivity">
 
+        <ProgressBar
+            android:layout_marginTop="50dp"
+            android:id="@+id/progress_bar"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
         <!-- Toolbar -->
         <android.support.v7.widget.Toolbar
             android:id="@+id/my_toolbar"

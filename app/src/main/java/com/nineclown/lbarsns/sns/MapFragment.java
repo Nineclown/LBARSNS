@@ -37,11 +37,11 @@ public class MapFragment extends Fragment {
     private MapPolyline polyline;
     private ArrayList<TravelDTO.LatLon> latLons;
     private String travelName;
+    private boolean isCreate;
 
     public MapFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -52,9 +52,8 @@ public class MapFragment extends Fragment {
 
         mFirestore = FirebaseFirestore.getInstance();
         mainActivity = (MainActivity) getActivity();
-        if (mapView == null) {
-            mapView = new MapView(mainActivity);
-        }
+
+        mapView = new MapView(mainActivity);
         polyline = new MapPolyline();
         latLons = new ArrayList<>();
 

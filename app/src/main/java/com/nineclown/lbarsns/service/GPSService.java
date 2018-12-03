@@ -209,7 +209,7 @@ public class GPSService extends Service {
             estimatedLocation.setLongitude(mEstimatedLongitude);
 
             // sample 과 estimated 를 비교해서 범위를 넘어서면 버린다.
-            if (sampleLocation.distanceTo(estimatedLocation) > 150) {
+            if (sampleLocation.distanceTo(estimatedLocation) > 75) {
                 // nothing to do.
                 Log.d("Travel", "여기에 오는 경우가 있음?");
 

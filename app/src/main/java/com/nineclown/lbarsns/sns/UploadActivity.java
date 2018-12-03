@@ -197,6 +197,7 @@ public class UploadActivity extends AppCompatActivity {
     }
 
     private void contentUpload() {
+        binding.progressBar.setVisibility(View.VISIBLE);
         @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "PNG_" + timeStamp + ".png";
 
@@ -207,9 +208,6 @@ public class UploadActivity extends AppCompatActivity {
          * #####################
          * */
 
-        // UploadTask uploadTask = mStorageRef.putFile(photoUri);
-        // Task<Uri> urlTask = uploadTask.continueWithTask(task -> {
-
         mStorageRef.putFile(photoUri).continueWithTask(task -> {
             if (!task.isSuccessful()) {
                 // 실패하면 예외처리.
@@ -219,6 +217,7 @@ public class UploadActivity extends AppCompatActivity {
             // url을 넘겨줘서 storage --> store로 전달하기 위한 전처리.
             return mStorageRef.getDownloadUrl();
         }).addOnSuccessListener(uri -> {
+            binding.progressBar.setVisibility(View.GONE);
             Toast.makeText(UploadActivity.this, "등록 완료.", Toast.LENGTH_SHORT).show();
             if (uri != null) {
                 // 업로드된 이미지 주소
@@ -252,7 +251,7 @@ public class UploadActivity extends AppCompatActivity {
             }
 
         }).addOnFailureListener(e -> {
-
+            binding.progressBar.setVisibility(View.GONE);
         });
     }
 

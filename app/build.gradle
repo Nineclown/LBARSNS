@@ -33,14 +33,14 @@ android {
         targetCompatibility 1.8
         sourceCompatibility 1.8
     }
-    splits {
+    /*splits {
         abi {
             enable true
             reset()
             include 'x86', 'x86_64', 'armeabi-v7a', 'armeabi'
             universalApk false
         }
-    }
+    }*/
 }
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
